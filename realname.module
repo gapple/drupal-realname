@@ -1,0 +1,216 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * The RealName module allows the admin to choose fields from teh user profile
+ * that will be used to add a "realname" element (method) to a user object.
+ * Hook_user is used to automatically add this to any user object that is loaded.
+ *
+ * @copyright Copyright (c) 2007-200 Nancy Wichmann.  All rights reserved.
+ */
+
+//********************************************************************
+//* Drupal Hooks
+//********************************************************************/
+
+/**
+ * Implementation of hook_menu().
+ */
+function realname_menu($may_cache) {
+  global $user;
+  $items = array();
+
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'admin/user/realname',
+      'title' => t('RealName'),
+      'description' => t("Configure which fields are used to create a user's RealName."),
+      'access' => user_access('administer users'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('realname_admin_settings'),
+      );
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function realname_user($op, &$edit, &$account, $category = null) {
+  if ($op == 'load') {
+    $account->realname = realname_make_name($account);
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function realname_help($path, $args = null) {
+  switch ($path) {
+    case 'admin/user/realname':
+      return t('This page displays the status of and settings for the RealName module.');
+
+    case 'admin/help#realname':
+      return t('This simple module adds a "realname" element (method) to a user object when that object is loaded.');
+  }
+}
+
+//********************************************************************
+//* Module Functions
+//********************************************************************
+
+/**
+ * Using selected fields, build the "real name" field in the object.
+ *
+ * @param
+ *   $account - the user object to update.
+ *
+ * @return
+ *   The constructed "real name" string.
+ */
+function realname_make_name(&$account) {
+  $fields = variable_get('realname_fields', array());
+  $sep = variable_get('realname_sep', ' ');
+
+  // Has the profile been loaded?
+  if (!isset($account->{$fields[0]['name']})) {
+    profile_load_profile($account);
+  }
+
+  $stuff = array();
+  foreach ($fields as $name => $weight) {
+    if (isset($account->$name)) {
+      $stuff[] = $account->$name;
+    } 
+  }
+
+  // TODO: Make a pattern, rather than hard separator.
+  return implode($sep, $stuff);
+}
+
+/**
+ * Provides array sorting function for uasort.
+ *  @link http://us2.php.net/manual/en/function.uasort.php PHP Manual @end-link
+ *
+ * @param
+ *   $a - the first array to be compared.
+ *
+ * @param
+ *   $b - the second array to be compared.
+ *
+ * @return
+ *   integer indicating ordering.
+ */
+function _realname_sort($a, $b) {
+  // Sort first by weight.
+  $ret = $a['weight'] - $b['weight'];
+  if ($ret == 0) {
+    // The two are equal, so use the title.
+    $ret = strcmp($a['title'], $b['title']);
+  }
+
+  return $ret;   
+}
+
+/**
+ * Displays the admin settings form.
+ */
+function realname_admin_settings() {
+  $form = $fields = array();
+  $current =   variable_get('realname_fields', array());
+
+  $result = db_query("SELECT * FROM {profile_fields} WHERE type='textfield'");
+  while ($field = db_fetch_array($result)) {
+    $name = $field['name'];
+    $selected = array_key_exists($name, $current);
+    $fields[$name] = array(
+      'title' => $field['title'],
+      'weight' => $selected ? $current[$name] : 0,
+      'selected' => $selected,
+      );
+  }
+  uasort($fields, '_realname_sort');
+
+  $form['start_table'] = array(
+    '#type' => 'markup',
+    '#value' => '<table><tr><th>Select</th><th>Field name</th><th>Weight</th></tr>',
+    );
+
+  $i = 0;
+  foreach ($fields as $f_name => $values) {
+    $form['field_select_'. $i] = array(
+      '#type' => 'checkbox',
+      '#default_value' => $values['selected'],
+      '#prefix' => '<tr><td align="center">',
+      '#suffix' => '</td>',
+      );
+
+    $form['field_name_'. $i] = array(
+      '#type' => 'hidden',
+      '#value' => $f_name,
+      );
+
+    $form['field_title_'. $i] = array(
+      '#type' => 'item',
+      '#value' => $values['title'],
+      '#prefix' => '<td>',
+      '#suffix' => '</td>',
+      );
+
+    $form['field_weight_'. $i] = array(
+      '#type' => 'weight',
+      '#delta' => 10,
+      '#default_value' => $values['weight'],
+      '#prefix' => '<td>',
+      '#suffix' => '</td></tr>',
+      );
+
+    ++$i;
+  }
+
+  $form['end_table'] = array(
+    '#type' => 'markup',
+    '#value' => '</table>',
+    );
+
+  $form['realname_sep'] = array(
+    '#type' => 'textfield',
+    '#field_prefix' => '<strong>'. t('Separator') .'</strong> ',
+    '#description' => t('This will be used between the fields to create the "Real name." The default is a single blank.'),
+    '#size' => 10,
+    '#default_value' => variable_get('realname_sep', ' '),
+    );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    );
+
+  return $form;
+}
+
+/**
+ * Form submit handler.
+ */
+function realname_admin_settings_submit($form_id, $form_values) {
+  $i = 0;
+  $fields = array();
+  // Run the form values to get all the fields they want.
+  while (isset($form_values['field_select_'. $i])) {
+    if ($form_values['field_select_'. $i]) {
+      $fields[] = array('title' => $form_values['field_name_'. $i], 'weight' => $form_values['field_weight_'. $i]);
+    }
+    ++$i;
+  }
+  // A little hoop jumping to sort right.
+  uasort($fields, '_realname_sort');
+  $realname_fields = array();
+  foreach ($fields as $key => $values) {
+    $realname_fields[$values['title']] = $values['weight'];
+  }
+
+  // Okay, save the stuff.
+  variable_set('realname_fields', $realname_fields);
+  variable_set('realname_sep', $form_values['realname_sep']);
+}

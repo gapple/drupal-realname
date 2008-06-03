@@ -1,0 +1,28 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *   Handles installation and updates for the RealName module.
+ *
+ * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
+ */
+
+//********************************************************************
+//* Drupal Hooks
+//********************************************************************
+
+/**
+ * Implementation of hook_enable().
+ */
+function realname_enable() {
+  drupal_set_message(t('The RealName module has been enabled. You may wish to proceed to <a href="!url">the settings page</a>.', array('!url' => url('admin/user/realname'))));  
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function realname_uninstall() {
+  variable_del('realname_sep');
+  variable_del('realname_fields');
+}
