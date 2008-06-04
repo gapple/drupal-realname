@@ -1,6 +1,6 @@
 ; $Id$
 
-The RealName module allows the admin to choose fields from teh user profile
+The RealName module allows the admin to choose fields from the user profile
 that will be used to add a "realname" element (method) to a user object.
 Hook_user is used to automatically add this to any user object that is loaded.
 
