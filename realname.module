@@ -63,7 +63,7 @@ function realname_user($op, &$edit, &$account, $category = null) {
 }
 
 /**
- *  Implementation of hook_nodeapi().
+ * Implementation of hook_nodeapi().
  */
 function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if (!variable_get('realname_nodeapi', false)) {
@@ -75,14 +75,14 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       // Save the username that is already there.
       $node->realname_save = $node->name;
       $account = user_load(array('uid' => $node->uid));
-      $node->name = realname_make_name($account);
+      $node->realname = $node->name = realname_make_name($account);
       break;
 
     case 'prepare':
       // Node is about to be edited.
       // Reset the username or save will fail.
       if (isset($node->realname_save)) {
-       $node->name = $node->realname_save;
+        $node->name = $node->realname_save;
       }
       break;
   }
@@ -103,7 +103,8 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  */
 function realname_make_name(&$account) {
   $fields = variable_get('realname_fields', array());
-  $sep = variable_get('realname_sep', ' ');
+//  $sep = variable_get('realname_sep', ' ');
+  $pattern = variable_get('realname_pattern', ' ');
 
   // Has the profile been loaded?
   if (!isset($account->{$fields[0]['name']})) {
@@ -111,19 +112,26 @@ function realname_make_name(&$account) {
   }
 
   $stuff = array();
+  $i = 0;
   foreach ($fields as $name => $weight) {
+    ++$i;
     if (isset($account->$name)) {
-      $stuff[] = $account->$name;
-    } 
+      $stuff['%'. $i] = check_plain($account->$name);
+    }
+    else {
+      // If there is no value, remove the patterm piece, except the first.
+      $pattern = $i > 1 ? str_replace('%'. $i, null, $pattern) : $pattern;
+    }
   }
 
   // If no fields set, use username.
   if (count($stuff) == 0) {
-    $stuff[] = $account->name;
+    $stuff['%1'] = $account->name;
   }
 
   // TODO: Make a pattern, rather than hard separator.
-  return implode($sep, $stuff);
+  $string = trim(strtr($pattern, $stuff));
+  return $string;
 }
 
 /**
@@ -211,12 +219,12 @@ function realname_admin_settings() {
     '#value' => '</table>',
     );
 
-  $form['realname_sep'] = array(
+  $form['realname_pattern'] = array(
     '#type' => 'textfield',
-    '#field_prefix' => '<strong>'. t('Separator') .'</strong> ',
-    '#description' => t('This will be used between the fields to create the "Real name." The default is a single blank.'),
-    '#size' => 10,
-    '#default_value' => variable_get('realname_sep', ' '),
+    '#field_prefix' => '<strong>'. t('Name Pattern') .'</strong> ',
+    '#description' => t('The determines how the fields will be used to create the "Real name." Use "%1" to refer to the first field, "%2" to refer to the second, etc..'),
+    '#size' => 30,
+    '#default_value' => variable_get('realname_pattern', '%1'),
     );
 
   $form['realname_theme'] = array(
@@ -263,7 +271,8 @@ function realname_admin_settings_submit($form_id, $form_values) {
 
   // Okay, save the stuff.
   variable_set('realname_fields', $realname_fields);
-  variable_set('realname_sep', $form_values['realname_sep']);
+//  variable_set('realname_sep', $form_values['realname_sep']);
+  variable_set('realname_pattern', $form_values['realname_pattern']);
   variable_set('realname_theme', $form_values['realname_theme']);
   variable_set('realname_nodeapi', $form_values['realname_nodeapi']);
 

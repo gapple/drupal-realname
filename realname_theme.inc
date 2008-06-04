@@ -18,6 +18,14 @@
  *   suggests that this is a site user. Otherwise, only the username is returned.
  */
 function phptemplate_username($object) {
+  // If we have a user id but no realname, then make one.
+  if ($object->uid && !$object->realname) {
+    $account = user_load(array('uid' => $object->uid));
+    $object->realname = realname_make_name($object);
+  }
+//  else {
+//  }
+  
   if ($object->uid && $object->realname) {
     // Shorten the name when it is too long or it will break many tables.
     if (drupal_strlen($object->realname) > 20) {
