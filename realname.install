@@ -25,4 +25,5 @@ function realname_enable() {
 function realname_uninstall() {
   variable_del('realname_sep');
   variable_del('realname_fields');
+  variable_del('realname_theme');
 }

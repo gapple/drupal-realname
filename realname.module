@@ -3,11 +3,11 @@
 
 /**
  * @file
- * The RealName module allows the admin to choose fields from teh user profile
+ * The RealName module allows the admin to choose fields from the user profile
  * that will be used to add a "realname" element (method) to a user object.
  * Hook_user is used to automatically add this to any user object that is loaded.
  *
- * @copyright Copyright (c) 2007-200 Nancy Wichmann.  All rights reserved.
+ * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
  */
 
 //********************************************************************
@@ -30,6 +30,12 @@ function realname_menu($may_cache) {
       'callback' => 'drupal_get_form',
       'callback arguments' => array('realname_admin_settings'),
       );
+  }
+  else {
+    // If desired, load the theme override file.
+    if (variable_get('realname_theme', false)) {
+      include_once(drupal_get_path('module', 'realname') .'/realname_theme.inc');
+    }
   }
   return $items;
 }
@@ -55,6 +61,7 @@ function realname_help($path, $args = null) {
       return t('This simple module adds a "realname" element (method) to a user object when that object is loaded.');
   }
 }
+
 
 //********************************************************************
 //* Module Functions
@@ -83,6 +90,11 @@ function realname_make_name(&$account) {
     if (isset($account->$name)) {
       $stuff[] = $account->$name;
     } 
+  }
+
+  // If no fields set, use username.
+  if (count($stuff) == 0) {
+    $stuff[] = $account->name;
   }
 
   // TODO: Make a pattern, rather than hard separator.
@@ -182,6 +194,13 @@ function realname_admin_settings() {
     '#default_value' => variable_get('realname_sep', ' '),
     );
 
+  $form['realname_theme'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Override username theme') .'</strong>',
+    '#description' => t('If this option is selected, the standard username theme function will be overriden to use the "Real name."'),
+    '#default_value' => variable_get('realname_theme', false),
+    );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -213,4 +232,7 @@ function realname_admin_settings_submit($form_id, $form_values) {
   // Okay, save the stuff.
   variable_set('realname_fields', $realname_fields);
   variable_set('realname_sep', $form_values['realname_sep']);
+  variable_set('realname_theme', $form_values['realname_theme']);
+
+  drupal_set_message(t('Configuration has been updated.'), 'status');
 }
