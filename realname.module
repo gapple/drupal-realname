@@ -30,27 +30,28 @@ function realname_help($path, $args = null) {
 /**
  * Implementation of hook_menu().
  */
-function realname_menu($may_cache) {
+function realname_menu() {
   global $user;
   $items = array();
 
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'admin/user/realname',
-      'title' => t('RealName'),
-      'description' => t("Configure which fields are used to create a user's RealName."),
-      'access' => user_access('administer users'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('realname_admin_settings'),
-      );
-  }
-  else {
-    // If desired, load the theme override file.
-    if (variable_get('realname_theme', false)) {
-      include_once(drupal_get_path('module', 'realname') .'/realname_theme.inc');
-    }
-  }
+  $items['admin/user/realname'] = array(
+    'title' => 'RealName',
+    'description' => "Configure which fields are used to create a user's RealName.",
+    'access arguments' => array('administer users'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('realname_admin_settings'),
+    );
   return $items;
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function realname_init() {
+  // If desired, load the theme override file.
+  if (variable_get('realname_theme', false)) {
+    include_once(drupal_get_path('module', 'realname') .'/realname_theme.inc');
+  }
 }
 
 /**
@@ -252,13 +253,13 @@ function realname_admin_settings() {
 /**
  * Form submit handler.
  */
-function realname_admin_settings_submit($form_id, $form_values) {
+function realname_admin_settings_submit($form, $form_state) {
   $i = 0;
   $fields = array();
   // Run the form values to get all the fields they want.
-  while (isset($form_values['field_select_'. $i])) {
-    if ($form_values['field_select_'. $i]) {
-      $fields[] = array('title' => $form_values['field_name_'. $i], 'weight' => $form_values['field_weight_'. $i]);
+  while (isset($form_state['values']['field_select_'. $i])) {
+    if ($form_state['values']['field_select_'. $i]) {
+      $fields[] = array('title' => $form_state['values']['field_name_'. $i], 'weight' => $form_state['values']['field_weight_'. $i]);
     }
     ++$i;
   }
@@ -271,10 +272,9 @@ function realname_admin_settings_submit($form_id, $form_values) {
 
   // Okay, save the stuff.
   variable_set('realname_fields', $realname_fields);
-//  variable_set('realname_sep', $form_values['realname_sep']);
-  variable_set('realname_pattern', $form_values['realname_pattern']);
-  variable_set('realname_theme', $form_values['realname_theme']);
-  variable_set('realname_nodeapi', $form_values['realname_nodeapi']);
+  variable_set('realname_pattern', $form_state['values']['realname_pattern']);
+  variable_set('realname_theme', $form_state['values']['realname_theme']);
+  variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');
 }
