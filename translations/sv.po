@@ -1,0 +1,98 @@
+# $Id$
+#
+# Swedish translation of Drupal (realname)
+# Copyright 2008 Magnus Gunnarsson <seals@passagen.se>
+# Generated from files:
+#  realname_theme.inc,v 1.2.4.1 2008/06/08 16:25:04 nancyw
+#  realname.module,v 1.4.4.1 2008/06/08 16:25:04 nancyw
+#  realname.info,v 1.1.4.1 2008/06/08 16:25:04 nancyw
+#  realname.install,v 1.4 2008/06/04 18:14:41 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Real Name 6.x\n"
+"POT-Creation-Date: 2008-06-09 16:43+0200\n"
+"PO-Revision-Date: 2008-06-09 17:01+0100\n"
+"Last-Translator: Magnus Gunnarsson <seals@passagen.se>\n"
+"Language-Team: drupalsverige.se\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: Swedish\n"
+"X-Poedit-Country: SWEDEN\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: realname_theme.inc:37
+msgid "View user profile."
+msgstr "Visa användarprofil."
+
+#: realname_theme.inc:55
+msgid "not verified"
+msgstr "ej verifierad"
+
+#: realname_theme.inc:58
+msgid "Anonymous"
+msgstr "Gäst"
+
+#: realname.module:23
+msgid "This page displays the status of and settings for the RealName module."
+msgstr "Denna sida visar status- och inställningar för modulen RealName."
+
+#: realname.module:26
+msgid "This simple module adds a \"realname\" element (method) to a user object when that object is loaded."
+msgstr "Denna enkla modul lägger till ett element (metod) av typen \"verkligt namn\" för en användares objekt när objektet laddas."
+
+#: realname.module:225
+msgid "Name Pattern"
+msgstr "Format för namn"
+
+#: realname.module:226
+msgid "The determines how the fields will be used to create the \"Real name.\" Use \"%1\" to refer to the first field, \"%2\" to refer to the second, etc.."
+msgstr "Fastställer hur fälten skall användas för att skapa ett \"verkligt namn\". Använd \"%1\" för att hänvisa till första fältet, \"%2\" för att hänvisa till det andra och så vidare."
+
+#: realname.module:233
+msgid "Override username theme"
+msgstr "Åsidosätt temats användarnamn"
+
+#: realname.module:234
+msgid "If this option is selected, the standard username theme function will be overriden to use the \"Real name.\""
+msgstr "Om detta alternativ är valt kommer det förvalda användarnamnet för temafunktionen att åsidosättas av \"verkligt namn\"."
+
+#: realname.module:240
+msgid "Show realname in nodes"
+msgstr "Visa verkligt namn i noder"
+
+#: realname.module:241
+msgid "If this option is selected, the \"Real name\" will be used on node displays."
+msgstr "Om detta alternativ är valt kommer det \"verkliga namnet\" att användas för nodvisning."
+
+#: realname.module:247
+msgid "Save"
+msgstr "Spara"
+
+#: realname.module:279
+msgid "Configuration has been updated."
+msgstr "Inställningarna har uppdaterats."
+
+#: realname.module:38
+#: realname.info:0
+msgid "RealName"
+msgstr "Verkligt namn"
+
+#: realname.module:39
+msgid "Configure which fields are used to create a user's RealName."
+msgstr "Ställ in vilka fält som skall användas för att skapa en användares verkliga namn."
+
+#: realname.module:0
+msgid "realname"
+msgstr "realname"
+
+#: realname.install:19
+msgid "The RealName module has been enabled. You may wish to proceed to <a href=\"!url\">the settings page</a>."
+msgstr "Modulen RealName har aktiverats. Du kan fortsätta till <a href=\"!url\">inställningssidan</a>."
+
+#: realname.info:0
+msgid "Use user profile fields to build a 'realname' field in a user object."
+msgstr "Använd användarprofilens fält för att bygga ett fält av typen \"verkligt namn\" för en användares objekt."
+
