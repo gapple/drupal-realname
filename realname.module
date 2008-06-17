@@ -106,7 +106,7 @@ function realname_form_alter($form_id, &$form) {
       if (!isset($user->realname)) {
         $user = user_load(array('uid' => $user->uid));
       }
-      $form['name']['#default_value'] = $user->uid ? $user->realname : '',
+      $form['name']['#default_value'] = $user->uid ? $user->realname : '';
       break;
   }
 }
