@@ -91,15 +91,24 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
 /**
  * Implementation of hook_form_alter().
- * Intercepts the user contact form to show the realname.
+ * Intercepts the contact forms to show the realname.
  */
 function realname_form_alter(&$form, $form_state, $form_id) {
   global $user;
-  if ($form_id == 'contact_mail_user') {
-    if (!isset($user->realname)) {
-      $user = user_load(array('uid' => $user->uid));
-    }
-    $form['from']['#value'] = check_plain($user->realname) .' &lt;'. check_plain($user->mail) .'&gt;';
+  switch ($form_id) { 
+    case 'contact_mail_user':
+      if (!isset($user->realname)) {
+        $user = user_load(array('uid' => $user->uid));
+      }
+      $form['from']['#value'] = check_plain($user->realname) .' &lt;'. check_plain($user->mail) .'&gt;';
+      break;
+    
+    case 'contact_mail_page':
+      if (!isset($user->realname)) {
+        $user = user_load(array('uid' => $user->uid));
+      }
+      $form['name']['#default_value'] = $user->uid ? $user->realname : '',
+      break;
   }
 }
 
