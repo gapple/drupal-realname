@@ -88,6 +88,20 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   }
 }
 
+/**
+ * Implementation of hook_form_alter().
+ * Intercepts the user contact form to show the realname.
+ */
+function realname_form_alter($form_id, &$form) {
+  global $user;
+  if ($form_id == 'contact_mail_user') {
+    if (!isset($user->realname)) {
+      $user = user_load(array('uid' => $user->uid));
+    }
+    $form['from']['#value'] = check_plain($user->realname) .' &lt;'. check_plain($user->mail) .'&gt;';
+  }
+}
+
 //********************************************************************
 //* Module Functions
 //********************************************************************
