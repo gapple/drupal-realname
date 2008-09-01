@@ -68,6 +68,15 @@ function realname_user($op, &$edit, &$account, $category = null) {
   if ($op == 'load') {
     $account->realname = realname_make_name($account);
   }
+
+  // If theme then replace name with realname.
+  if (variable_get('realname_theme', false)) {
+    //Store it for places where it needed
+    if (!isset($account->realname_save) && is_object($account)) {
+      $account->realname_save = $account->name;
+      $account->name = $account->realname;
+    }
+  }
 }
 
 /**
@@ -111,6 +120,10 @@ function realname_form_alter(&$form, $form_state, $form_id) {
 
   global $user;
   switch ($form_id) { 
+    case 'user_profile_form':
+      $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
+      break;
+
     case 'contact_mail_user':
       if (!isset($user->realname)) {
         $user = user_load(array('uid' => $user->uid));
@@ -145,7 +158,7 @@ function realname_make_name(&$account) {
   $pattern = variable_get('realname_pattern', ' ');
 
   // Has the profile been loaded?
-  if (!isset($account->{$fields[0]['name']})) {
+  if (!isset($account->{key($fields)})) {
     profile_load_profile($account);
   }
 
