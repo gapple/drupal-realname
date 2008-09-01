@@ -28,6 +28,13 @@ function realname_help($path, $args = null) {
 }
 
 /**
+ * Implementation of hook_perm().
+ */
+function realname_perm() {
+  return array('use realname');
+}
+
+/**
  * Implementation of hook_menu().
  */
 function realname_menu() {
@@ -67,6 +74,10 @@ function realname_user($op, &$edit, &$account, $category = null) {
  * Implementation of hook_nodeapi().
  */
 function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if (!user_access('use realname')) {
+    return;
+  }
+
   if (!variable_get('realname_nodeapi', false)) {
     return;
   }
@@ -94,6 +105,10 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * Intercepts the contact forms to show the realname.
  */
 function realname_form_alter(&$form, $form_state, $form_id) {
+  if (!user_access('use realname')) {
+    return;
+  }
+
   global $user;
   switch ($form_id) { 
     case 'contact_mail_user':
