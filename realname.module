@@ -17,7 +17,7 @@
 /**
  * Implementation of hook_help().
  */
-function realname_help($path, $args = null) {
+function realname_help($path, $args = NULL) {
   switch ($path) {
     case 'admin/user/realname':
       return t('This page displays the status of and settings for the RealName module.');
@@ -53,7 +53,7 @@ function realname_menu($may_cache) {
   }
   else {
     // If desired, load the theme override file.
-    if (variable_get('realname_theme', false)) {
+    if (variable_get('realname_theme', FALSE)) {
       include_once(drupal_get_path('module', 'realname') .'/realname_theme.inc');
     }
   }
@@ -63,13 +63,13 @@ function realname_menu($may_cache) {
 /**
  * Implementation of hook_user().
  */
-function realname_user($op, &$edit, &$account, $category = null) {
+function realname_user($op, &$edit, &$account, $category = NULL) {
   if ($op == 'load') {
     $account->realname = realname_make_name($account);
   }
 
   // If theme then replace name with realname.
-  if (variable_get('realname_theme', false)) {
+  if (variable_get('realname_theme', FALSE)) {
     //Store it for places where it needed
     if (!isset($account->realname_save) && is_object($account)) {
       $account->realname_save = $account->name;
@@ -86,7 +86,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     return;
   }
 
-  if (!variable_get('realname_nodeapi', false)) {
+  if (!variable_get('realname_nodeapi', FALSE)) {
     return;
   }
   switch ($op) {
@@ -120,7 +120,7 @@ function realname_form_alter($form_id, &$form) {
   global $user;
   switch ($form_id) { 
     case 'user_profile_form':
-      if (variable_get('realname_theme', false)) {
+      if (variable_get('realname_theme', FALSE)) {
         $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
       }
       break;
@@ -173,7 +173,7 @@ function realname_make_name(&$account) {
     }
     else {
       // If there is no value, remove the patterm piece, except the first.
-      $pattern = $i > 1 ? str_replace('%'. $i, null, $pattern) : $pattern;
+      $pattern = $i > 1 ? str_replace('%'. $i, NULL, $pattern) : $pattern;
     }
   }
 
@@ -284,14 +284,21 @@ function realname_admin_settings() {
     '#type' => 'checkbox',
     '#title' => '<strong>'. t('Override username theme') .'</strong>',
     '#description' => t('If this option is selected, the standard username theme function will be overriden to use the "Real name."'),
-    '#default_value' => variable_get('realname_theme', false),
+    '#default_value' => variable_get('realname_theme', FALSE),
     );
 
   $form['realname_nodeapi'] = array(
     '#type' => 'checkbox',
     '#title' => '<strong>'. t('Show realname in nodes') .'</strong>',
     '#description' => t('If this option is selected, the "Real name" will be used on node displays.'),
-    '#default_value' => variable_get('realname_nodeapi', false),
+    '#default_value' => variable_get('realname_nodeapi', FALSE),
+    );
+
+  $form['realname_notver'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Show "Not verified" for anonymous users') .'</strong>',
+    '#description' => t('Drupal core adds "Not verified" for anaonymous users, this option allows that to be turned off.'),
+    '#default_value' => variable_get('realname_notver', TRUE),
     );
 
   $form['submit'] = array(

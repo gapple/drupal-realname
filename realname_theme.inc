@@ -43,7 +43,7 @@ function phptemplate_username($object) {
       $output = check_plain($name);
     }
   }
-  else if ($object->name) {
+  elseif ($object->name) {
     // Sometimes modules display content composed by people who are
     // not registered members of the site (e.g. mailing list or news
     // aggregator modules). This clause enables modules to display
@@ -55,7 +55,9 @@ function phptemplate_username($object) {
       $output = check_plain($object->name);
     }
 
-    $output .= ' ('. t('not verified') .')';
+    if (variable_get('realname_notver', TRUE)) {
+      $output .= ' ('. t('not verified') .')';
+    }
   }
   else {
     $output = variable_get('anonymous', t('Anonymous'));
