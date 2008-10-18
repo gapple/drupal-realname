@@ -23,10 +23,10 @@ function phptemplate_username($object) {
     $account = user_load(array('uid' => $object->uid));
     $object->realname = realname_make_name($object);
   }
-  else {
-    $object->realname = $object->name;
-  }
-  
+//  else {
+//    $object->realname = $object->name;
+//  }
+
   if ($object->uid && $object->realname) {
     // Shorten the name when it is too long or it will break many tables.
     if (drupal_strlen($object->realname) > 20) {
