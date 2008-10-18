@@ -10,6 +10,10 @@
  * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
  */
 
+ if (module_exists('token')) {
+    include_once(drupal_get_path('module', 'realname') .'/token_realname.inc');
+  }
+
 //********************************************************************
 //* Drupal Hooks
 //********************************************************************/
@@ -121,7 +125,9 @@ function realname_form_alter(&$form, $form_state, $form_id) {
   global $user;
   switch ($form_id) { 
     case 'user_profile_form':
-      $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
+      if (variable_get('realname_theme', false)) {
+        $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
+      }
       break;
 
     case 'contact_mail_user':
