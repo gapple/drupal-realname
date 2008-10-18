@@ -19,13 +19,14 @@
  */
 function phptemplate_username($object) {
   // If we have a user id but no realname, then make one.
+ drupal_set_message(print_r($object, true));
   if ($object->uid && !$object->realname && user_access('use realname')) {
     $account = user_load(array('uid' => $object->uid));
     $object->realname = realname_make_name($object);
   }
-  else {
-    $object->realname = $object->name;
-  }
+//  else {
+//    $object->realname = $object->name;
+//  }
 
   if ($object->uid && $object->realname) {
     // Shorten the name when it is too long or it will break many tables.
