@@ -120,7 +120,9 @@ function realname_form_alter($form_id, &$form) {
   global $user;
   switch ($form_id) { 
     case 'user_profile_form':
-      $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
+      if (variable_get('realname_theme', false)) {
+        $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
+      }
       break;
 
     case 'contact_mail_user':
