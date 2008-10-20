@@ -14,18 +14,10 @@ The only menu item is for the settings page.
 
 Settings
 --------
-The settings page is at Administer >> User >> Realname.
-
-This is where you choose which fields from the profile will be used
-to create the user's RealName.
-
-Note: Currently only "single line textfield" data will be shown.
-
-The "Separator" value will be placed between the pieces of the name.
-
-TODO: Change to a pattern for more flexilibility.
+The most up-to-date information is at http://drupal.org/node/266616.
 
 Permissions
 -----------
-There are no new permissions. The settings page is controlled by the
-"administer users" permission.
+There is one new permission, "use realname." This allows you to control which roles see the realname and which don't.
+
+The settings page is controlled by the "administer users" permission.
