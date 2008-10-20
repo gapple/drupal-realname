@@ -3,16 +3,17 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  realname_theme.inc,v 1.2 2008/06/04 18:14:41 nancyw
-#  realname.module,v 1.4 2008/06/04 18:14:41 nancyw
-#  realname.info,v 1.1 2008/06/03 19:43:14 nancyw
+#  realname_theme.inc,v 1.2.4.6 2008/10/20 15:28:48 nancyw
+#  token_realname.inc,v 1.1.2.1 2008/09/11 21:31:27 nancyw
+#  realname.module,v 1.4.4.11 2008/10/20 15:28:48 nancyw
+#  realname.info,v 1.1.4.1 2008/06/08 16:25:04 nancyw
 #  realname.install,v 1.4 2008/06/04 18:14:41 nancyw
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2008-06-08 12:23-0400\n"
+"POT-Creation-Date: 2008-10-20 13:56-0400\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -21,63 +22,103 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: realname_theme.inc:37
+#: realname_theme.inc:39
+msgid "View user's home page."
+msgstr ""
+
+#: realname_theme.inc:43
 msgid "View user profile."
 msgstr ""
 
-#: realname_theme.inc:55
+#: realname_theme.inc:64
 msgid "not verified"
 msgstr ""
 
-#: realname_theme.inc:58
+#: realname_theme.inc:68
 msgid "Anonymous"
 msgstr ""
 
-#: realname.module:23
+#: token_realname.inc:10
+msgid "The RealName for the user."
+msgstr ""
+
+#: token_realname.inc:11
+msgid "Themed username link."
+msgstr ""
+
+#: token_realname.inc:12
+msgid "The home page for the user."
+msgstr ""
+
+#: realname.module:27
 msgid "This page displays the status of and settings for the RealName module."
 msgstr ""
 
-#: realname.module:26
+#: realname.module:30
 msgid "This simple module adds a \"realname\" element (method) to a user object when that object is loaded."
 msgstr ""
 
-#: realname.module:225
+#: realname.module:313
 msgid "Name Pattern"
 msgstr ""
 
-#: realname.module:226
+#: realname.module:314
 msgid "The determines how the fields will be used to create the \"Real name.\" Use \"%1\" to refer to the first field, \"%2\" to refer to the second, etc.."
 msgstr ""
 
-#: realname.module:233
+#: realname.module:321
 msgid "Override username theme"
 msgstr ""
 
-#: realname.module:234
+#: realname.module:322
 msgid "If this option is selected, the standard username theme function will be overriden to use the \"Real name.\""
 msgstr ""
 
-#: realname.module:240
+#: realname.module:328
 msgid "Show realname in nodes"
 msgstr ""
 
-#: realname.module:241
+#: realname.module:329
 msgid "If this option is selected, the \"Real name\" will be used on node displays."
 msgstr ""
 
-#: realname.module:247
+#: realname.module:335
+msgid "Show \"Not verified\" for anonymous users"
+msgstr ""
+
+#: realname.module:336
+msgid "Drupal core adds \"Not verified\" for anonymous users, this option allows that to be turned off."
+msgstr ""
+
+#: realname.module:342
+msgid ""
+msgstr ""
+
+#: realname.module:347
+msgid "Link to homepage"
+msgstr ""
+
+#: realname.module:348
+msgid "There were URL fields in the profile. If one of these is a personal homepage link, you may choose to link to it rather than the user profile. Choose which field to use."
+msgstr ""
+
+#: realname.module:355
 msgid "Save"
 msgstr ""
 
-#: realname.module:279
+#: realname.module:389
 msgid "Configuration has been updated."
 msgstr ""
 
-#: realname.module:38 realname.info:0
+#: realname.module:38
+msgid "use realname"
+msgstr ""
+
+#: realname.module:49 realname.info:0
 msgid "RealName"
 msgstr ""
 
-#: realname.module:39
+#: realname.module:50
 msgid "Configure which fields are used to create a user's RealName."
 msgstr ""
 

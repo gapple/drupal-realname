@@ -101,6 +101,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       $node->realname_save = $node->name;
       $account = user_load(array('uid' => $node->uid));
       $node->realname = $node->name = realname_make_name($account);
+      $node->homepage = $account->homepage;
       break;
 
     case 'prepare':
@@ -160,13 +161,22 @@ function realname_form_alter(&$form, $form_state, $form_id) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
+  static $fields, $pattern_saved, $homepage;
   static $users = array();
+  static $links = array();
+
   if (isset($users[$account->uid])) {
+    $account->homepage = $links[$account->uid];
     return $users[$account->uid];
   }
 
-  $fields = variable_get('realname_fields', array());
-  $pattern = variable_get('realname_pattern', ' ');
+  // Get our controlling variables (static makes it once per page load).
+  if (!isset($fields)) {
+    $fields = variable_get('realname_fields', array());
+    $pattern_saved = variable_get('realname_pattern', ' ');
+    $homepage = variable_get('realname_homepage', NULL);
+  }
+  $pattern = $pattern_saved;
 
   // Has the profile been loaded?
   if (!isset($account->{key($fields)})) {
@@ -189,6 +199,12 @@ function realname_make_name(&$account) {
   // If no fields set, use username.
   if (count($stuff) == 0) {
     $stuff['%1'] = $account->name;
+  }
+
+  if ($homepage) {
+    if ($account->$homepage) {
+      $links[$account->uid] = $account->homepage = $account->$homepage;
+    }
   }
 
   $string = trim(strtr($pattern, $stuff));
@@ -224,18 +240,29 @@ function _realname_sort($a, $b) {
  * Displays the admin settings form.
  */
 function realname_admin_settings() {
-  $form = $fields = array();
+  $form = $fields = $links = array();
   $current =   variable_get('realname_fields', array());
 
-  $result = db_query("SELECT * FROM {profile_fields} WHERE type='textfield'");
+  $result = db_query("SELECT * FROM {profile_fields}");
   while ($field = db_fetch_array($result)) {
-    $name = $field['name'];
-    $selected = array_key_exists($name, $current);
-    $fields[$name] = array(
-      'title' => $field['title'],
-      'weight' => $selected ? $current[$name] : 0,
-      'selected' => $selected,
-      );
+    switch ($field['type']) {
+      case 'textfield':
+        $name = $field['name'];
+        $selected = array_key_exists($name, $current);
+        $fields[$name] = array(
+          'title' => $field['title'],
+          'weight' => $selected ? $current[$name] : 0,
+          'selected' => $selected,
+          );
+        break;
+
+      case 'url':
+        $links[$field['name']] = $field['title'];
+        break;
+
+      default:
+        break;
+    }
   }
   uasort($fields, '_realname_sort');
 
@@ -310,6 +337,19 @@ function realname_admin_settings() {
     '#default_value' => variable_get('realname_notver', TRUE),
     );
 
+  // If there were any URL fields, give a home page option.
+  if ($links) {
+    $links[''] = t('');
+    asort($links);
+    $form['realname_homepage'] = array(
+      '#type' => 'select',
+      '#options' => $links,
+      '#title' => t('Link to homepage'),
+      '#description' => t('There were URL fields in the profile. If one of these is a personal homepage link, you may choose to link to it rather than the user profile. Choose which field to use.'),
+      '#default_value' => variable_get('realname_homepage', NULL),
+      );
+  }
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -321,7 +361,7 @@ function realname_admin_settings() {
 /**
  * Form submit handler.
  */
-function realname_admin_settings_submit($form, $form_state) {
+function realname_admin_settings_submit($form, &$form_state) {
   $i = 0;
   $fields = array();
   // Run the form values to get all the fields they want.
@@ -344,6 +384,7 @@ function realname_admin_settings_submit($form, $form_state) {
   variable_set('realname_theme', $form_state['values']['realname_theme']);
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
+  variable_set('realname_homepage', $form_state['values']['realname_homepage']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');
 }
