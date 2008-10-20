@@ -34,7 +34,15 @@ function phptemplate_username($object) {
     }
 
     if (user_access('access user profiles')) {
-      $output = l($name, 'user/'. $object->uid, array('title' => t('View user profile.')));
+      if (isset($object->homepage)) {
+        $url = $object->homepage;
+        $title = t("View user's home page.");
+      }
+      else {
+        $url = 'user/'. $object->uid;
+        $title = t('View user profile.');
+      }
+      $output = l($name, $url, array('title' => $title));
     }
     else {
       $output = check_plain($name);
