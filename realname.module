@@ -338,6 +338,7 @@ function realname_admin_settings_submit($form, $form_state) {
   variable_set('realname_pattern', $form_state['values']['realname_pattern']);
   variable_set('realname_theme', $form_state['values']['realname_theme']);
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
+  variable_set('realname_notver', $form_state['values']['realname_notver']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');
 }
