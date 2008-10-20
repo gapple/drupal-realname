@@ -6,17 +6,17 @@
 */
 
 function realname_token_list($type = 'all') {
-  if ($type == 'user' || $type == 'all' || $type == 'global') {
-    $tokens['realname'] = t('The RealName for the user.');
-    $tokens['realname-link'] = t('Themed username link.');
-    $tokens['homepage'] = t('The home page for the user.');
+  if ($type == 'user' || $type == 'node' || $type == 'all' || $type == 'global') {
+    $tokens[$type]['realname'] = t('The RealName for the user.');
+    $tokens[$type]['realname-link'] = t('Themed username link.');
+    $tokens[$type]['homepage'] = t('The home page for the user.');
     return $tokens;
   }
 }
 
 function realname_token_values($type, $object = NULL, $options = array()) {
   global $user;
-  if ($type == 'user' || $type == 'all' || $type == 'global') {
+  if ($type == 'user' || $type == 'node' || $type == 'all' || $type == 'global') {
     if (!$object) {
       $object = $user;
     }
