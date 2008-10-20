@@ -160,6 +160,11 @@ function realname_form_alter(&$form, $form_state, $form_id) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
+  static $users = array();
+  if (isset($users[$account->uid])) {
+    return $users[$account->uid];
+  }
+
   $fields = variable_get('realname_fields', array());
   $pattern = variable_get('realname_pattern', ' ');
 
@@ -186,8 +191,8 @@ function realname_make_name(&$account) {
     $stuff['%1'] = $account->name;
   }
 
-  // TODO: Make a pattern, rather than hard separator.
   $string = trim(strtr($pattern, $stuff));
+  $users[$account->uid] = $string;
   return $string;
 }
 
@@ -212,7 +217,7 @@ function _realname_sort($a, $b) {
     $ret = strcmp($a['title'], $b['title']);
   }
 
-  return $ret;   
+  return $ret;
 }
 
 /**
