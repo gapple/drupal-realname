@@ -114,6 +114,22 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
+ * Implementation of hook_comment().
+ */
+function realname_comment(&$comment, $op) {
+  switch ($op) {
+    case 'view':
+      if (!$comment->homepage) {
+        $account = user_load(array('uid' => $comment->uid));
+        realname_make_name($account);
+        $comment->homepage = $account->homepage;
+      }
+      break;
+  }
+  return;
+}
+
+/**
  * Implementation of hook_form_alter().
  * Intercepts the contact forms to show the realname.
  */
