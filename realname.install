@@ -27,4 +27,18 @@ function realname_uninstall() {
   variable_del('realname_fields');
   variable_del('realname_theme');
   variable_del('realname_nodeapi');
+  variable_del('realname_profile_module');
+  variable_del('realname_profile_type');
+}
+
+/**
+ * Implementation of hook_updare_N().
+ */
+function realname_update_6100() {
+  $ret = array();
+
+  variable_set('realname_profile_module', 'profile');
+  $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_profile_module', 'profile')");
+
+  return $ret;
 }

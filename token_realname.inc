@@ -7,32 +7,35 @@
 
 function realname_token_list($type = 'all') {
   $tokens = array();
-//  if ($type == 'user' || $type == 'node' || $type == 'all' || $type == 'global') {
-    $prefix = 'user-';
-    if ($type == 'comment') {
-      $prefix = 'comment-';
-    }
-    $tokens[$type][$prefix .'realname'] = t('The RealName for the user.');
-    $tokens[$type][$prefix .'realname-link'] = t('Themed username link.');
-    $tokens[$type][$prefix .'homepage'] = t('The home page for the user.');
-    return $tokens;
-//  }
+  switch ($type) {
+    case 'user':
+    case 'node':
+    case 'all':
+    case 'global':
+      $tokens[$type]['realname'] = t('The RealName for the user.');
+      $tokens[$type]['realname-link'] = t('Themed username link.');
+      $tokens[$type]['homepage'] = t('The home page for the user.');
+      return $tokens;
+  }
 }
 
 function realname_token_values($type, $object = NULL, $options = array()) {
   global $user;
   $tokens = array();
-//  if ($type == 'user' || $type == 'node' || $type == 'all' || $type == 'global') {
-    if (!$object) {
-      $object = $user;
-    }
-    $prefix = 'user-';
-    if ($type == 'comment') {
-      $prefix = 'comment-';
-    }
-    $tokens[$prefix .'realname'] = realname_make_name($object);
-    $tokens[$prefix .'realname-link'] = theme('username', $object);
-    $tokens[$prefix .'homepage'] = $object->homepage;    
-    return $tokens;
-//  }
+  if (!$object) {
+    $object = $user;
+  }
+  switch ($type) {
+    case 'user':
+    case 'node':
+    case 'all':
+    case 'global':
+      $tokens['realname'] = realname_make_name($object);
+      $tokens['realname-link'] = theme('username', $object);
+      $tokens['homepage'] = $object->homepage;    
+      return $tokens;
+
+    case 'comment':
+      
+  }
 }

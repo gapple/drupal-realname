@@ -49,9 +49,26 @@ function realname_menu() {
     'title' => 'RealName',
     'description' => "Configure which fields are used to create a user's RealName.",
     'access arguments' => array('administer users'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('realname_admin_settings'),
+    'page callback' => 'realname_admin_settings',
+    'type' => MENU_NORMAL_ITEM,
     );
+
+  $items['admin/user/realname/fields'] = array(
+    'title' => 'Fields',
+    'access arguments' => array('administer users'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('realname_admin_fields'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+
+  $items['admin/user/realname/module'] = array(
+    'title' => 'Module',
+    'access arguments' => array('administer users'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('realname_admin_module'),
+    'type' => MENU_LOCAL_TASK,
+    );
+
   return $items;
 }
 
@@ -87,6 +104,8 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
  * Implementation of hook_nodeapi().
  */
 function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  static $type;
+  static $accounts = array();
   if (!user_access('use realname')) {
     return;
   }
@@ -96,10 +115,20 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   }
   switch ($op) {
     case 'load':
+      // Don't operate on the node type that we are using.
+      if (!isset($type)) {
+        $type = variable_get('realname_profile_type', NULL);
+      }
+      if ($node->type == $type) {
+        break;
+      }
       // Node is being loaded.
       // Save the username that is already there.
       $node->realname_save = $node->name;
-      $account = user_load(array('uid' => $node->uid));
+      if (!isset($accounts[$node->uid])) {
+        $accounts[$node->uid] = user_load(array('uid' => $node->uid));
+      }
+      $account = $accounts[$node->uid];
       $node->realname = $node->name = realname_make_name($account);
       $node->homepage = $account->homepage;
       break;
@@ -177,7 +206,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
-  static $fields, $pattern_saved, $homepage;
+  static $fields, $pattern_saved, $homepage, $type, $module;
   static $users = array();
   static $links = array();
 
@@ -191,12 +220,21 @@ function realname_make_name(&$account) {
     $fields = variable_get('realname_fields', array());
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
+    $module = variable_get('realname_profile_module', 'profile');
+    $type = variable_get('realname_profile_type', NULL);
+    if ($module) {
+      include_once(drupal_get_path('module', 'realname') .'/realname_'. $module .'.inc');
+    }
   }
   $pattern = $pattern_saved;
 
   // Has the profile been loaded?
   if (!isset($account->{key($fields)})) {
-    profile_load_profile($account);
+    $load_func = $module .'_load_profile';
+    if (!function_exists($load_func)) {
+      drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
+    }
+    module_invoke($module, 'load_profile', $account, $type);
   }
 
   $stuff = array();
@@ -204,7 +242,12 @@ function realname_make_name(&$account) {
   foreach ($fields as $name => $weight) {
     ++$i;
     if (isset($account->$name)) {
-      $stuff['%'. $i] = check_plain($account->$name);
+      if (is_array($account->$name)) {
+        $stuff['%'. $i] = $account->{$name}[0]['view'];
+      }
+      else {
+        $stuff['%'. $i] = check_plain($account->$name);
+      }
     }
     else {
       // If there is no value, remove the patterm piece, except the first.
@@ -223,8 +266,7 @@ function realname_make_name(&$account) {
     }
   }
 
-  $string = trim(strtr($pattern, $stuff));
-  $users[$account->uid] = $string;
+  $users[$account->uid] = $string = trim(strtr($pattern, $stuff));
   return $string;
 }
 
@@ -256,30 +298,107 @@ function _realname_sort($a, $b) {
  * Displays the admin settings form.
  */
 function realname_admin_settings() {
-  $form = $fields = $links = array();
-  $current =   variable_get('realname_fields', array());
+  return drupal_get_form('realname_admin_fields');
+}
 
-  $result = db_query("SELECT * FROM {profile_fields}");
-  while ($field = db_fetch_array($result)) {
-    switch ($field['type']) {
-      case 'textfield':
-        $name = $field['name'];
-        $selected = array_key_exists($name, $current);
-        $fields[$name] = array(
-          'title' => $field['title'],
-          'weight' => $selected ? $current[$name] : 0,
-          'selected' => $selected,
-          );
-        break;
+function realname_admin_module($form_state) {
+  $form = array();
+  // Get the list of modules we support.
+  include_once(drupal_get_path('module', 'realname') .'/realname_supported.inc');
+  $supported_modules = realname_supported_modules();
 
-      case 'url':
-        $links[$field['name']] = $field['title'];
-        break;
-
-      default:
-        break;
+  $choices = $show_types = array();
+  foreach ($supported_modules as $module => $values) {
+    if (module_exists($module)) {
+      $choices[$module] = check_plain($values['name']);
+      $show_types[$module] = $values['types'];
     }
   }
+
+  $form['show_types'] = array('#type' => 'value', '#value' => $show_types);
+
+  if (isset($form_state['storage']['module_chosen'])) {
+    $module = $form_state['storage']['module_chosen'];
+    $form['module'] = array(
+      '#type' => 'item',
+      '#value' => t('You have chosen the "@module" module to provide data.', array('@module' => $module)),
+      );
+    // Now show the types, if appropriate.
+    $form['type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Content types available to @module', array('@module' => $module)),
+      '#options' => $form_state['storage']['types'],
+      '#default_value' => variable_get('realname_profile_type', NULL),
+      '#required' => TRUE,
+      );
+  }
+  else {
+    $form['module'] = array(
+      '#type' => 'radios',
+      '#title' => t('These modules are available for providing data to RealName'),
+      '#options' => $choices,
+      '#default_value' => variable_get('realname_profile_module', NULL),
+      '#required' => TRUE,
+      );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Use this module'),
+    );
+  return $form;
+}
+
+function realname_admin_module_submit($form, &$form_state) {
+  if (!isset($form_state['storage']['module_chosen'])) {
+    $module = $form_state['values']['module'];
+    variable_set('realname_profile_module', $module);
+    $form_state['storage']['module_chosen'] = $module;
+
+    $show_types = $form_state['values']['show_types'];
+    if ($show_types[$module]) {
+      include_once(drupal_get_path('module', 'realname') .'/realname_'. $module .'.inc');
+      // This module uses types, so let's see what types are allowed.
+      $types = call_user_func('realname_'. $module .'_get_types');
+      if (count($types) > 1) {
+        $form_state['storage']['types'] = $types;
+        return;
+      }
+      else {
+        variable_set('realname_profile_type', key($types));
+      }
+    }
+    // This module doesn't use types, or only does one type, so go pick fields.
+    unset($form_state['storage']);
+    $form_state['redirect'] = 'admin/user/realname/fields'; // Go get the fields now.
+    return;
+  }
+}
+
+function realname_admin_fields() {
+  $form = array();
+  $current = variable_get('realname_fields', array());
+  $module = variable_get('realname_profile_module', NULL);
+  $type = variable_get('realname_profile_type', NULL);
+  // Do we have a module set yet?
+  if (!$module) {
+    drupal_goto('admin/user/realname/module');
+  }
+
+  $what = t('You are using the %module module to provide fields.', array('%module' => $module));
+  if ($type) {
+    $what .= t('The %type type is the source of data.', array('%type' => $type));
+  }
+
+  $form['heading'] = array(
+    '#type' => 'item',
+    '#value' => $what,
+    );
+
+  include_once(drupal_get_path('module', 'realname') .'/realname_'. $module .'.inc');
+  $profile_fields = call_user_func('realname_'. $module .'_get_fields', $current);
+  $fields = $profile_fields['fields'];
+  $links = $profile_fields['links'];
   uasort($fields, '_realname_sort');
 
   $form['start_table'] = array(
@@ -377,7 +496,7 @@ function realname_admin_settings() {
 /**
  * Form submit handler.
  */
-function realname_admin_settings_submit($form, &$form_state) {
+function realname_admin_fields_submit($form, &$form_state) {
   $i = 0;
   $fields = array();
   // Run the form values to get all the fields they want.
