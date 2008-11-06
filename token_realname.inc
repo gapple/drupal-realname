@@ -32,7 +32,7 @@ function realname_token_values($type, $object = NULL, $options = array()) {
     }
     $tokens[$prefix .'realname'] = realname_make_name($object);
     $tokens[$prefix .'realname-link'] = theme('username', $object);
-    $tokens[$prefix .'homepage'] = $object->homepage;    
+    $tokens[$prefix .'homepage'] = $object->homepage;
     return $tokens;
 //  }
 }

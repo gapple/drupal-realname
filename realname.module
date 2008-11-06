@@ -139,7 +139,14 @@ function realname_form_alter($form_id, &$form) {
   }
 
   global $user;
-  switch ($form_id) { 
+  switch ($form_id) {
+    case 'comment_form':
+      if(!isset($user->realname)) {
+        $user = user_load(array('uid'=>$user->uid));
+      }
+      $form['author']['#value'] = $user->realname_save;
+      break;
+
     case 'user_profile_form':
       if (variable_get('realname_theme', FALSE)) {
         $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
@@ -190,6 +197,7 @@ function realname_make_name(&$account) {
     $fields = variable_get('realname_fields', array());
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
+    $theme = variable_get('realname_theme', FALSE);
   }
   $pattern = $pattern_saved;
 
@@ -217,7 +225,12 @@ function realname_make_name(&$account) {
   }
 
   if ($homepage && $account->$homepage) {
-    $links[$account->uid] = $account->homepage = $account->$homepage;
+    if ($theme) {
+      $links[$account->uid] = theme('username', $account);
+    }
+    else {
+      $links[$account->uid] = $account->$homepage;
+    }
   }
 
   $string = trim(strtr($pattern, $stuff));

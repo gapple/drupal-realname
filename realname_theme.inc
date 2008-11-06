@@ -54,7 +54,7 @@ function phptemplate_username($object) {
     // aggregator modules). This clause enables modules to display
     // the true author of the content.
     if ($object->homepage) {
-      $output = l($object->name, $object->homepage);
+      $output = l($object->name, $object->homepage, array('attributes' => array('title' => t("View user's home page."))));
     }
     else {
       $output = check_plain($object->name);
