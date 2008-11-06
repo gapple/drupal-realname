@@ -32,7 +32,7 @@ function realname_token_values($type, $object = NULL, $options = array()) {
     case 'global':
       $tokens['realname'] = realname_make_name($object);
       $tokens['realname-link'] = theme('username', $object);
-      $tokens['homepage'] = $object->homepage;    
+      $tokens['homepage'] = $object->homepage;
       return $tokens;
 
     case 'comment':
