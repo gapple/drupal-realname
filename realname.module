@@ -144,7 +144,8 @@ function realname_form_alter($form_id, &$form) {
       if(!isset($user->realname)) {
         $user = user_load(array('uid'=>$user->uid));
       }
-      $form['author']['#value'] = $user->realname_save;
+// drupal_set_message('before '. show_array($form));
+      $form['author']['#default_value'] = $user->realname_save;
       break;
 
     case 'user_profile_form':
@@ -183,9 +184,10 @@ function realname_form_alter($form_id, &$form) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
-  static $fields, $pattern_saved, $homepage;
+  static $fields, $pattern_saved, $homepage, $profile_privacy;
   static $users = array();
   static $links = array();
+  static $edit = array();
 
   if (isset($users[$account->uid])) {
     $account->homepage = $links[$account->uid];
@@ -198,19 +200,28 @@ function realname_make_name(&$account) {
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
     $theme = variable_get('realname_theme', FALSE);
+    $profile_privacy = module_exists('profile_privacy');
   }
   $pattern = $pattern_saved;
 
   // Has the profile been loaded?
   if (!isset($account->{key($fields)})) {
     profile_load_profile($account);
+    if ($profile_privacy) {
+      profile_privacy_user('load', $edit, $account);
+    }
   }
 
   $stuff = array();
   $i = 0;
   foreach ($fields as $name => $weight) {
     ++$i;
-    if (isset($account->$name)) {
+    $private = 'private_'. $name;
+    // This will let you see that a user is using Profile Privacy.
+//    if (isset($account->{$private})) {
+//      drupal_set_message("$account->name ($account->uid) has marked the $name field as private.");
+//    }
+    if (isset($account->$name) && !isset($account->{$private})) {
       $stuff['%'. $i] = check_plain($account->$name);
     }
     else {
