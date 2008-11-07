@@ -172,9 +172,20 @@ function realname_form_alter(&$form, $form_state, $form_id) {
   switch ($form_id) {
     case 'comment_form':
       if(!isset($user->realname)) {
-        $user = user_load(array('uid'=>$user->uid));
+        $user = user_load(array('uid' => $user->uid));
       }
-      $form['author']['#value'] = $user->realname_save;
+ drupal_set_message((string)$user->uid .' before '. show_array($form));
+      if ($user->uid) {
+        $form['name']['#default_value'] = $user->realname_save;
+      }
+      else {
+//        $form['name']['#default_value'] = $user->realname = $user->realname_save = variable_get('anonymous', 'Anonymous');
+        $form['name']['#default_value'] = variable_get('anonymous', 'Anonymous');
+//        $form['author']['#value'] = variable_get('anonymous', 'Anonymous');
+        $form['mail']['#default_value'] = t('Enter your email address here.');
+      }
+// drupal_set_message(print_r($user, true));
+ drupal_set_message('after '. show_array($form));
       break;
 
    case 'user_profile_form':
@@ -213,9 +224,10 @@ function realname_form_alter(&$form, $form_state, $form_id) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
-  static $fields, $pattern_saved, $homepage, $type, $module;
+  static $fields, $pattern_saved, $homepage, $type, $module, $profile_privacy;
   static $users = array();
   static $links = array();
+  static $edit = array();
 
   if (isset($users[$account->uid])) {
     $account->homepage = $links[$account->uid];
@@ -230,6 +242,7 @@ function realname_make_name(&$account) {
     $theme = variable_get('realname_theme', FALSE);
     $module = variable_get('realname_profile_module', 'profile');
     $type = variable_get('realname_profile_type', NULL);
+    $profile_privacy = module_exists('profile_privacy');
     if ($module) {
       include_once(drupal_get_path('module', 'realname') .'/realname_'. $module .'.inc');
     }
@@ -243,13 +256,21 @@ function realname_make_name(&$account) {
       drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
     }
     module_invoke($module, 'load_profile', $account, $type);
+    if ($profile_privacy) {
+      profile_privacy_user('load', $edit, $account);
+    }
   }
 
   $stuff = array();
   $i = 0;
   foreach ($fields as $name => $weight) {
     ++$i;
-    if (isset($account->$name)) {
+    $private = 'private_'. $name;
+    // This will let you see that a user is using Profile Privacy.
+//    if (isset($account->{$private})) {
+//      drupal_set_message("$account->name ($account->uid) has marked the $name field as private.");
+//    }
+    if (isset($account->$name) && !isset($account->{$private})) {
       if (is_array($account->$name)) {
         $stuff['%'. $i] = $account->{$name}[0]['view'];
       }
