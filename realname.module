@@ -270,7 +270,8 @@ function realname_make_name(&$account) {
 //    if (isset($account->{$private})) {
 //      drupal_set_message("$account->name ($account->uid) has marked the $name field as private.");
 //    }
-    if (isset($account->$name) && !isset($account->{$private})) {
+    $private_field = isset($account->{$private}) ? $account->{$private} : FALSE;
+    if (isset($account->$name) && !$private_field) {
       if (is_array($account->$name)) {
         $stuff['%'. $i] = $account->{$name}[0]['view'];
       }
@@ -280,13 +281,15 @@ function realname_make_name(&$account) {
     }
     else {
       // If there is no value, remove the patterm piece, except the first.
-      $pattern = $i > 1 ? str_replace('%'. $i, NULL, $pattern) : $pattern;
+//      $pattern = $i > 1 ? str_replace('%'. $i, NULL, $pattern) : $pattern;
+      $pattern = str_replace('%'. $i, NULL, $pattern);
     }
   }
 
   // If no fields set, use username.
   if (count($stuff) == 0) {
     $stuff['%1'] = $account->name;
+    $pattern = '%1';
   }
 
   if ($homepage && $account->$homepage) {
