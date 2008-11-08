@@ -174,7 +174,6 @@ function realname_form_alter(&$form, $form_state, $form_id) {
       if(!isset($user->realname)) {
         $user = user_load(array('uid' => $user->uid));
       }
- drupal_set_message((string)$user->uid .' before '. show_array($form));
       if ($user->uid) {
         $form['name']['#default_value'] = $user->realname_save;
       }
@@ -184,8 +183,6 @@ function realname_form_alter(&$form, $form_state, $form_id) {
 //        $form['author']['#value'] = variable_get('anonymous', 'Anonymous');
         $form['mail']['#default_value'] = t('Enter your email address here.');
       }
-// drupal_set_message(print_r($user, true));
- drupal_set_message('after '. show_array($form));
       break;
 
    case 'user_profile_form':
