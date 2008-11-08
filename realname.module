@@ -144,7 +144,6 @@ function realname_form_alter($form_id, &$form) {
       if(!isset($user->realname)) {
         $user = user_load(array('uid'=>$user->uid));
       }
-// drupal_set_message('before '. show_array($form));
       $form['author']['#default_value'] = $user->realname_save;
       break;
 
