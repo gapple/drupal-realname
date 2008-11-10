@@ -9,6 +9,7 @@
  *
  * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
  */
+  define('MODULE_VERSION', '$Id$');
 
   if (module_exists('token')) {
     include_once(drupal_get_path('module', 'realname') .'/token_realname.inc');
@@ -24,7 +25,9 @@
 function realname_help($path, $args = NULL) {
   switch ($path) {
     case 'admin/user/realname':
-      return t('This page displays the status of and settings for the RealName module.');
+      $output = t('This page displays the status of and settings for the RealName module.');
+      $output .= '<p>Version: '. MODULE_VERSION .'</p>';
+      return $output;
 
     case 'admin/help#realname':
       return t('This simple module adds a "realname" element (method) to a user object when that object is loaded.');
