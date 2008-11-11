@@ -293,12 +293,12 @@ function realname_make_name(&$account) {
   }
 
   if ($homepage && $account->$homepage) {
-    if ($theme) {
-      $links[$account->uid] = theme('username', $account);
-    }
-    else {
+//    if ($theme) {
+//      $links[$account->uid] = theme('username', $account);
+//    }
+//    else {
       $links[$account->uid] = $account->$homepage;
-    }
+//    }
   }
 
   $users[$account->uid] = $string = trim(strtr($pattern, $stuff));
@@ -518,6 +518,13 @@ function realname_admin_fields() {
       '#description' => t('There were URL fields in the profile. If one of these is a personal homepage link, you may choose to link to it rather than the user profile. Choose which field to use.'),
       '#default_value' => variable_get('realname_homepage', NULL),
       );
+
+    $form['realname_nofollow'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Spam link deterrent'),
+      '#description' => t('If enabled, Drupal will add rel="nofollow" to all links, as a measure to reduce the effectiveness of spam links. Note: this will also prevent valid links from being followed by search engines, therefore it is likely most effective when enabled for anonymous users.'),
+      '#default_value' => variable_get('realname_nofollow', FALSE),
+      );
   }
 
   $form['submit'] = array(
@@ -554,6 +561,7 @@ function realname_admin_fields_submit($form, &$form_state) {
   variable_set('realname_theme', $form_state['values']['realname_theme']);
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
+  variable_set('realname_nofollow', $form_state['values']['realname_nofollow']);
   variable_set('realname_homepage', $form_state['values']['realname_homepage']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');

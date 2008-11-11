@@ -12,6 +12,7 @@ function realname_token_list($type = 'all') {
     case 'node':
     case 'all':
     case 'global':
+    case 'comment':
       $tokens[$type]['realname'] = t('The RealName for the user.');
       $tokens[$type]['realname-link'] = t('Themed username link.');
       $tokens[$type]['homepage'] = t('The home page for the user.');
@@ -28,14 +29,13 @@ function realname_token_values($type, $object = NULL, $options = array()) {
   switch ($type) {
     case 'user':
     case 'node':
-    case 'all':
+//    case 'all':
     case 'global':
+    case 'comment':
       $tokens['realname'] = realname_make_name($object);
       $tokens['realname-link'] = theme('username', $object);
       $tokens['homepage'] = $object->homepage;
       return $tokens;
-
-    case 'comment':
       
   }
 }

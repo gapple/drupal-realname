@@ -33,15 +33,20 @@ function phptemplate_username($object) {
     }
 
     if (user_access('access user profiles')) {
+      $attrs = array();
       if (isset($object->homepage)) {
         $url = $object->homepage;
         $title = t("View user's home page.");
+        if (variable_get('realname_nofollow', FALSE)) {
+          $attrs['rel'] = 'nofollow';
+        }
       }
       else {
         $url = 'user/'. $object->uid;
         $title = t('View user profile.');
       }
-      $output = l($name, $url, array('attributes' => array('title' => $title)));
+      $attrs['title'] = $title;
+      $output = l($name, $url, array('attributes' => $attrs));
     }
     else {
       $output = check_plain($name);
