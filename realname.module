@@ -174,7 +174,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
   global $user;
   switch ($form_id) {
     case 'comment_form':
-      if(!isset($user->realname)) {
+      if (!isset($user->realname)) {
         $user = user_load(array('uid' => $user->uid));
       }
       if ($user->uid) {
@@ -224,7 +224,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
  *   The constructed "real name" string.
  */
 function realname_make_name(&$account) {
-  static $fields, $pattern_saved, $homepage, $type, $module, $profile_privacy;
+  static $fields, $pattern_saved, $homepage, $use_theme, $type, $module, $profile_privacy;
   static $users = array();
   static $links = array();
   static $edit = array();
@@ -239,7 +239,7 @@ function realname_make_name(&$account) {
     $fields = variable_get('realname_fields', array());
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
-    $theme = variable_get('realname_theme', FALSE);
+    $use_theme = variable_get('realname_theme', FALSE);
     $module = variable_get('realname_profile_module', 'profile');
     $type = variable_get('realname_profile_type', NULL);
     $profile_privacy = module_exists('profile_privacy');
@@ -293,11 +293,11 @@ function realname_make_name(&$account) {
   }
 
   if ($homepage && $account->$homepage) {
-//    if ($theme) {
-//      $links[$account->uid] = theme('username', $account);
+//    if ($use_theme) {
+//      $links[$account->uid] = $account->homepage = theme('username', $account);
 //    }
 //    else {
-      $links[$account->uid] = $account->$homepage;
+      $links[$account->uid] = $account->homepage = $account->$homepage;
 //    }
   }
 
