@@ -1,9 +1,9 @@
 <?php
 // $Id$ */
 /**
-* @file
-*   Token module support for the realname module.
-*/
+ * @file
+ *   Token module support for the realname module.
+ */
 
 function realname_token_list($type = 'all') {
   $tokens = array();

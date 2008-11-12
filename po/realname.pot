@@ -3,16 +3,17 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  realname_theme.inc,v 1.2.2.4 2008/10/20 15:29:02 nancyw
-#  realname.module,v 1.4.2.10 2008/10/20 15:29:01 nancyw
+#  realname_theme.inc,v 1.2.4.10 2008/11/11 18:03:58 nancyw
+#  token_realname.inc,v 1.1.4.6 2008/11/11 18:03:40 nancyw
+#  realname.module,v 1.4.2.20 2008/11/11 18:03:40 nancyw
 #  realname.info,v 1.1 2008/06/03 19:43:14 nancyw
-#  realname.install,v 1.4 2008/06/04 18:14:41 nancyw
+#  realname.install,v 1.4.2.1 2008/11/11 18:03:40 nancyw
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2008-10-20 13:54-0400\n"
+"POT-Creation-Date: 2008-11-12 12:05-0500\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -21,91 +22,111 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: realname_theme.inc:39
+#: realname_theme.inc:39;61
 msgid "View user's home page."
 msgstr ""
 
-#: realname_theme.inc:43
+#: realname_theme.inc:46
 msgid "View user profile."
 msgstr ""
 
-#: realname_theme.inc:64
+#: realname_theme.inc:68
 msgid "not verified"
 msgstr ""
 
-#: realname_theme.inc:68
+#: realname_theme.inc:72
 msgid "Anonymous"
 msgstr ""
 
-#: realname.module:23
+#: token_realname.inc:16
+msgid "The RealName for the user."
+msgstr ""
+
+#: token_realname.inc:17
+msgid "Themed username link."
+msgstr ""
+
+#: token_realname.inc:18
+msgid "The home page for the user."
+msgstr ""
+
+#: realname.module:28
 msgid "This page displays the status of and settings for the RealName module."
 msgstr ""
 
-#: realname.module:26
+#: realname.module:33
 msgid "This simple module adds a \"realname\" element (method) to a user object when that object is loaded."
 msgstr ""
 
-#: realname.module:47 realname.info:0
+#: realname.module:54 realname.info:0
 msgid "RealName"
 msgstr ""
 
-#: realname.module:48
+#: realname.module:55
 msgid "Configure which fields are used to create a user's RealName."
 msgstr ""
 
-#: realname.module:306
+#: realname.module:356
 msgid "Name Pattern"
 msgstr ""
 
-#: realname.module:307
+#: realname.module:357
 msgid "The determines how the fields will be used to create the \"Real name.\" Use \"%1\" to refer to the first field, \"%2\" to refer to the second, etc.."
 msgstr ""
 
-#: realname.module:314
+#: realname.module:364
 msgid "Override username theme"
 msgstr ""
 
-#: realname.module:315
+#: realname.module:365
 msgid "If this option is selected, the standard username theme function will be overriden to use the \"Real name.\""
 msgstr ""
 
-#: realname.module:321
+#: realname.module:371
 msgid "Show realname in nodes"
 msgstr ""
 
-#: realname.module:322
+#: realname.module:372
 msgid "If this option is selected, the \"Real name\" will be used on node displays."
 msgstr ""
 
-#: realname.module:328
+#: realname.module:378
 msgid "Show \"Not verified\" for anonymous users"
 msgstr ""
 
-#: realname.module:329
+#: realname.module:379
 msgid "Drupal core adds \"Not verified\" for anonymous users, this option allows that to be turned off."
 msgstr ""
 
-#: realname.module:335
+#: realname.module:385
 msgid ""
 msgstr ""
 
-#: realname.module:340
+#: realname.module:390
 msgid "Link to homepage"
 msgstr ""
 
-#: realname.module:341
+#: realname.module:391
 msgid "There were URL fields in the profile. If one of these is a personal homepage link, you may choose to link to it rather than the user profile. Choose which field to use."
 msgstr ""
 
-#: realname.module:348
+#: realname.module:397
+msgid "Spam link deterrent"
+msgstr ""
+
+#: realname.module:398
+msgid "If enabled, Drupal will add rel=\"nofollow\" to all links, as a measure to reduce the effectiveness of spam links. Note: this will also prevent valid links from being followed by search engines, therefore it is likely most effective when enabled for anonymous users."
+msgstr ""
+
+#: realname.module:405
 msgid "Save"
 msgstr ""
 
-#: realname.module:382
+#: realname.module:440
 msgid "Configuration has been updated."
 msgstr ""
 
-#: realname.module:34
+#: realname.module:41
 msgid "use realname"
 msgstr ""
 
