@@ -40,8 +40,13 @@ function realname_uninstall() {
 function realname_update_6100() {
   $ret = array();
 
-  variable_set('realname_profile_module', 'profile');
-  $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_profile_module', 'profile')");
+  if (variable_get('realname_profile_module', NULL)) {
+    $ret[] = array('success' => TRUE, 'query' => t('No change required.'));
+  }
+  else {
+    variable_set('realname_profile_module', 'profile');
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_profile_module', 'profile')");
+  }
 
   return $ret;
 }
