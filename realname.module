@@ -241,14 +241,14 @@ function realname_make_name(&$account) {
     $pattern = '%1';
   }
 
-//  if ($homepage && $account->$homepage) {
+  if ($homepage && $account->$homepage) {
 //    if ($use_theme) {
 //      $links[$account->uid] = $account->homepage = theme('username', $account);
 //    }
 //    else {
       $links[$account->uid] = $account->homepage = $account->$homepage;
 //    }
-//  }
+  }
 
   $string = trim(strtr($pattern, $stuff));
   $users[$account->uid] = $string;
