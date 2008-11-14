@@ -83,6 +83,9 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
       }
     }
   }
+//  else {
+//     drupal_set_message("hook_user($op)");
+//  }
 }
 
 /**
@@ -140,6 +143,7 @@ function realname_form_alter($form_id, &$form) {
   if (!user_access('use realname')) {
     return;
   }
+// drupal_set_message($form_id);
 
   global $user;
   switch ($form_id) {
@@ -150,6 +154,7 @@ function realname_form_alter($form_id, &$form) {
       $form['author']['#default_value'] = $user->realname_save;
       break;
 
+    case 'user_edit':
     case 'user_profile_form':
       if (variable_get('realname_theme', FALSE)) {
         $form['account']['name']['#default_value'] = $form['_account']['#value']->realname_save;
