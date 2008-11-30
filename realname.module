@@ -56,6 +56,27 @@ function realname_menu($may_cache) {
       'access' => user_access('administer users'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('realname_admin_settings'),
+      'type' => MENU_NORMAL_ITEM,
+      );
+
+    $items[] = array(
+      'path' => 'admin/user/realname/fields',
+      'title' => t('Fields'),
+      'access' => user_access('administer users'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('realname_admin_fields'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0,
+      );
+
+    $items[] = array(
+      'path' => 'admin/user/realname/bypass',
+      'title' => t('Bypass Forms'),
+      'access' => user_access('administer users'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('realname_admin_bypass'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 2,
       );
   }
   else {
@@ -140,19 +161,32 @@ function realname_comment(&$comment, $op) {
  * Intercepts the contact forms to show the realname.
  */
 function realname_form_alter($form_id, &$form) {
+  global $user;
   if (!user_access('use realname')) {
     return;
   }
-// drupal_set_message($form_id);
 
-  global $user;
-  switch ($form_id) {
-    case 'comment_form':
+  $bypass_forms = variable_get('realname_bypass_forms', array(array('name' => 'comment_form', 'fields' => array('name'))));
+  foreach ($bypass_forms as $bypass) {
+    // Is it a form the admin wants bypassed?
+    if ($form_id == $bypass['name']) {
+      $field_name = '$form[\''. implode("']['", $bypass['fields']) ."']['#default_value']";
       if (!isset($user->realname)) {
         $user = user_load(array('uid' => $user->uid));
       }
-      $form['author']['#default_value'] = $user->realname_save;
-      break;
+      $value = $user->uid ? $user->realname_save : variable_get('anonymous', 'Anonymous');
+      eval($field_name .' = $value;');      
+    }
+  }
+  // We will go ahead and fall through in case there is any other special processing.
+
+  switch ($form_id) {
+//    case 'comment_form':
+//      if (!isset($user->realname)) {
+//        $user = user_load(array('uid' => $user->uid));
+//      }
+//      $form['author']['#default_value'] = $user->realname_save;
+//      break;
 
     case 'user_edit':
     case 'user_profile_form':
@@ -231,11 +265,10 @@ function realname_make_name(&$account) {
 //    }
     $private_field = isset($account->{$private}) ? $account->{$private} : FALSE;
     if (isset($account->$name) && !$private_field) {
-      $stuff['%'. $i] = check_plain($account->$name);
+      $stuff['%'. $i] = $account->$name;
     }
     else {
       // If there is no value, remove the patterm piece, except the first.
-//      $pattern = $i > 1 ? str_replace('%'. $i, NULL, $pattern) : $pattern;
       $pattern = str_replace('%'. $i, NULL, $pattern);
     }
   }
@@ -247,15 +280,11 @@ function realname_make_name(&$account) {
   }
 
   if ($homepage && $account->$homepage) {
-//    if ($use_theme) {
-//      $links[$account->uid] = $account->homepage = theme('username', $account);
-//    }
-//    else {
-      $links[$account->uid] = $account->homepage = $account->$homepage;
-//    }
+    $links[$account->uid] = $account->homepage = $account->$homepage;
   }
 
   $string = trim(strtr($pattern, $stuff));
+  $string = drupal_validate_utf8($string) ? htmlspecialchars($string, ENT_COMPAT) : '';
   $users[$account->uid] = $string;
   return $string;
 }
@@ -282,6 +311,54 @@ function _realname_sort($a, $b) {
   }
 
   return $ret;
+}
+
+function realname_admin_bypass() {
+  $form = array();
+
+  $current = variable_get('realname_bypass_forms', array(array('name' => 'comment_form', 'fields' => array('name'))));
+  $rows = count($current);
+  $bypass_list = NULL;
+  foreach ($current as $bypass) {
+    $bypass_list .= $bypass['name'] .' '. implode(' ', $bypass['fields']) ."\n";
+  }
+
+  $form['warning'] = array(
+    '#type' => 'markup',
+    '#value' => '<div class="messages warning">'. t('<strong>WARNING</strong>: This form may cause errors if the instructions below are not followed or if you give an invalid form name or field name. Please do not remove the "comment_form" line.') .'</div>',
+    );
+
+  $form['bypass_forms'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Bypass these forms'),
+    '#rows' => max(array($rows + 1, 5)),
+    '#default_value' => $bypass_list,
+    '#description' => t('Enter one form per line. Each line should start with the form name. That should be followed by the name of the field to be reset to the username. If the field is a child field, include its full parent path, separated by spaces. For example: mymodule_form fieldset_1 fieldset_2 name'),
+    '#required' => TRUE,
+    );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Bypass these forms'),
+    );
+
+  return $form;
+}
+
+function realname_admin_bypass_submit($form_id, $form_values) {
+  $bypass_list = explode("\n", $form_values['bypass_forms']);
+  $bypass_forms = array();
+  foreach ($bypass_list as $line) {
+    $line = trim($line);
+    if ($line) {
+      $pieces = explode(' ', $line);
+      $form_info = array('name' => array_shift($pieces));
+      $form_info['fields'] = $pieces;
+      $bypass_forms[] = $form_info;
+    }
+  }
+  variable_set('realname_bypass_forms', $bypass_forms);
+  drupal_set_message(t('Information saved for !count forms.', array('!count' => count($bypass_forms))), 'status');
 }
 
 /**
