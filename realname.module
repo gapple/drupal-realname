@@ -164,6 +164,20 @@ function realname_comment(&$comment, $op) {
   }
   return;
 }
+ 
+/**
+ * Implementation of hook_mail_alter().
+ * Intercepts the user activation form to show the username.
+ */
+function realname_mail_alter(&$message) {
+  switch ($message['id']) {
+    case 'user_status_activated':
+      // Look for the "username: " string which precedes the username.
+      if (isset($message['params']['account']->realname_save)) {
+        $message['body'][0] = str_replace(t('username: '). $message['params']['account']->name, t('username: '). $message['params']['account']->realname_save, $message['body'][0]);
+      }
+  }
+}
 
 /**
  * Implementation of hook_form_alter().
@@ -240,6 +254,11 @@ function realname_make_name(&$account) {
   // Get our controlling variables (static makes it once per page load).
   if (!isset($fields)) {
     $fields = variable_get('realname_fields', array());
+    // Are there any fields assigned yet?
+    if (!$fields) {
+      // No, so just return the name.
+      return $account->name;
+    }
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
     $use_theme = variable_get('realname_theme', FALSE);
@@ -279,7 +298,7 @@ function realname_make_name(&$account) {
         $stuff['%'. $i] = $account->{$name}[0]['view'];
       }
       else {
-        $stuff['%'. $i] = check_plain($account->$name);
+        $stuff['%'. $i] = drupal_validate_utf8($account->$name) ? htmlspecialchars($account->$name, ENT_COMPAT) : '';
       }
     }
     else {
