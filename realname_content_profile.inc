@@ -46,11 +46,15 @@ function realname_content_profile_get_types() {
   return content_profile_get_types('names');
 }
 
-function realname_content_profile_get_fields($current) {
+function realname_content_profile_get_fields($current, $type) {
   $fields = $links = array();
   $all_fields = content_fields(NULL, $type);
   if ($all_fields) {
     foreach ($all_fields as $field_name => $field_attributes) {
+      // If it's not they type we are looking for, then skip the field.
+      if ($field_attributes['type_name'] != $type) {
+        continue;
+      }
       switch ($field_attributes['type']) {
         case 'text':
           if (!$field_attributes['multiple']) {
