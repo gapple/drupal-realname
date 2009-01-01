@@ -3,10 +3,10 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  realname_content_profile.inc,v 1.1.2.3 2008/11/13 15:44:07 nancyw
+#  realname_content_profile.inc,v 1.1.2.4 2008/11/30 20:36:15 nancyw
 #  realname_theme.inc,v 1.2.4.10 2008/11/11 18:03:58 nancyw
 #  token_realname.inc,v 1.1.2.7 2008/11/11 18:03:58 nancyw
-#  realname.module,v 1.4.4.23 2008/11/13 17:03:39 nancyw
+#  realname.module,v 1.4.4.26 2008/12/30 21:30:42 nancyw
 #  realname.info,v 1.1.4.2 2008/11/03 19:59:58 nancyw
 #  realname.install,v 1.4.4.3 2008/11/13 15:44:07 nancyw
 #
@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2008-11-30 15:28-0500\n"
+"POT-Creation-Date: 2009-01-01 14:38-0500\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -63,115 +63,115 @@ msgstr ""
 msgid "This simple module adds a \"realname\" element (method) to a user object when that object is loaded."
 msgstr ""
 
-#: realname.module:188;188
+#: realname.module:185;185
 msgid "username: "
 msgstr ""
 
-#: realname.module:300
+#: realname.module:297
 msgid "The profile load function (!module) was not found."
 msgstr ""
 
-#: realname.module:391
+#: realname.module:388
 msgid "<strong>WARNING</strong>: This form may cause errors if the instructions below are not followed or if you give an invalid form name or field name. Please do not remove the \"comment_form\" line."
 msgstr ""
 
-#: realname.module:396;405
+#: realname.module:393;402
 msgid "Bypass these forms"
 msgstr ""
 
-#: realname.module:399
+#: realname.module:396
 msgid "Enter one form per line. Each line should start with the form name. That should be followed by the name of the field to be reset to the username. If the field is a child field, include its full parent path, separated by spaces. For example: mymodule_form fieldset_1 fieldset_2 name"
 msgstr ""
 
-#: realname.module:424
+#: realname.module:421
 msgid "Information saved for !count forms."
 msgstr ""
 
-#: realname.module:447
+#: realname.module:444
 msgid "You have chosen the \"@module\" module to provide data."
 msgstr ""
 
-#: realname.module:450
+#: realname.module:447
 msgid "Use this content type"
 msgstr ""
 
-#: realname.module:453
+#: realname.module:450
 msgid "Content types available to @module"
 msgstr ""
 
-#: realname.module:460
+#: realname.module:457
 msgid "Use this module"
 msgstr ""
 
-#: realname.module:463
+#: realname.module:460
 msgid "These modules are available for providing data to RealName"
 msgstr ""
 
-#: realname.module:517
+#: realname.module:514
 msgid "You are using the %module module to provide fields."
 msgstr ""
 
-#: realname.module:519
+#: realname.module:516
 msgid "The %type type is the source of data."
 msgstr ""
 
-#: realname.module:577
+#: realname.module:574
 msgid "Name Pattern"
 msgstr ""
 
-#: realname.module:578
+#: realname.module:575
 msgid "The determines how the fields will be used to create the \"Real name.\" Use \"%1\" to refer to the first field, \"%2\" to refer to the second, etc.."
 msgstr ""
 
-#: realname.module:585
+#: realname.module:582
 msgid "Override username theme"
 msgstr ""
 
-#: realname.module:586
+#: realname.module:583
 msgid "If this option is selected, the standard username theme function will be overriden to use the \"Real name.\""
 msgstr ""
 
-#: realname.module:592
+#: realname.module:589
 msgid "Show realname in nodes"
 msgstr ""
 
-#: realname.module:593
+#: realname.module:590
 msgid "If this option is selected, the \"Real name\" will be used on node displays."
 msgstr ""
 
-#: realname.module:599
+#: realname.module:596
 msgid "Show \"Not verified\" for anonymous users"
 msgstr ""
 
-#: realname.module:600
+#: realname.module:597
 msgid "Drupal core adds \"Not verified\" for anonymous users, this option allows that to be turned off."
 msgstr ""
 
-#: realname.module:606
+#: realname.module:603
 msgid ""
 msgstr ""
 
-#: realname.module:611
+#: realname.module:608
 msgid "Link to homepage"
 msgstr ""
 
-#: realname.module:612
+#: realname.module:609
 msgid "There were URL fields in the profile. If one of these is a personal homepage link, you may choose to link to it rather than the user profile. Choose which field to use."
 msgstr ""
 
-#: realname.module:618
+#: realname.module:615
 msgid "Spam link deterrent"
 msgstr ""
 
-#: realname.module:619
+#: realname.module:616
 msgid "If enabled, Drupal will add rel=\"nofollow\" to all links, as a measure to reduce the effectiveness of spam links. Note: this will also prevent valid links from being followed by search engines, therefore it is likely most effective when enabled for anonymous users."
 msgstr ""
 
-#: realname.module:626
+#: realname.module:623
 msgid "Save"
 msgstr ""
 
-#: realname.module:661
+#: realname.module:658
 msgid "Configuration has been updated."
 msgstr ""
 
