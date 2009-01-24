@@ -19,7 +19,7 @@
  */
 function phptemplate_username($object) {
   // If we have a user id but no realname, then make one.
-  if ($object->uid && !$object->realname && user_access('use realname')) {
+  if ($object->uid && empty($object->realname) && user_access('use realname')) {
     $object->realname = realname_make_name($object);
   }
 

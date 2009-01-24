@@ -144,7 +144,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       }
       $account = $accounts[$node->uid];
       $node->realname = $node->name = realname_make_name($account);
-      $node->homepage = $account->homepage;
+      $node->homepage = isset($account->homepage) ? $account->homepage : NULL;
       break;
 
     case 'prepare':
@@ -166,7 +166,7 @@ function realname_comment(&$comment, $op) {
       if (!$comment->homepage) {
         $account = user_load(array('uid' => $comment->uid));
         realname_make_name($account);
-        $comment->homepage = $account->homepage;
+        $comment->homepage = isset($account->homepage) ? $account->homepage : NULL;
       }
       break;
   }
@@ -266,7 +266,7 @@ function realname_make_name(&$account) {
   static $edit = array();
 
   if (isset($users[$account->uid])) {
-    $account->homepage = $links[$account->uid];
+    $account->homepage = isset($links[$account->uid]) ? $links[$account->uid] : NULL;
     return $users[$account->uid];
   }
 

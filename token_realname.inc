@@ -34,7 +34,7 @@ function realname_token_values($type, $object = NULL, $options = array()) {
     case 'comment':
       $tokens['realname'] = realname_make_name($object);
       $tokens['realname-link'] = theme('username', $object);
-      $tokens['homepage'] = $object->homepage;
+      $tokens['homepage'] = isset($object->homepage) ? $object->homepage : NULL;
       return $tokens;
       
   }
