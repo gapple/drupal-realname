@@ -25,8 +25,9 @@ function phptemplate_username($object) {
 
   if ($object->uid && $object->realname) {
     // Shorten the name when it is too long or it will break many tables.
-    if (drupal_strlen($object->realname) > 25) {
-      $name = drupal_substr($object->realname, 0, 20) .'...';
+    $max_name = variable_get('realname_max_username', 20);
+    if (drupal_strlen($object->realname) > $max_name) {
+      $name = drupal_substr($object->realname, 0, $max_name - 3) .'...';
     }
     else {
       $name = $object->realname;

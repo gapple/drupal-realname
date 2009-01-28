@@ -584,6 +584,14 @@ function realname_admin_fields() {
     '#default_value' => variable_get('realname_theme', TRUE),
     );
 
+  $form['realname_max_username'] = array(
+    '#type' => 'textfield',
+    '#field_prefix' => '<strong>'. t('Maximum allowed username length') .'</strong> ',
+    '#description' => t('Long usernames may "break" some tables or other displays; this setting limits the maximum length. Note that the core recommendation is 20.'),
+    '#size' => 6,
+    '#default_value' => variable_get('realname_max_username', 20),
+    );
+
   $form['realname_nodeapi'] = array(
     '#type' => 'checkbox',
     '#title' => '<strong>'. t('Show realname in nodes') .'</strong>',
@@ -650,6 +658,7 @@ function realname_admin_fields_submit($form, &$form_state) {
   variable_set('realname_fields', $realname_fields);
   variable_set('realname_pattern', $form_state['values']['realname_pattern']);
   variable_set('realname_theme', $form_state['values']['realname_theme']);
+  variable_set('realname_max_username', $form_state['values']['realname_max_username']);
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
   variable_set('realname_nofollow', $form_state['values']['realname_nofollow']);

@@ -26,6 +26,7 @@ function realname_uninstall() {
   variable_del('realname_pattern');
   variable_del('realname_fields');
   variable_del('realname_theme');
+  variable_del('realname_max_username');
   variable_del('realname_nodeapi');
   variable_del('realname_notver');
   variable_del('realname_nofollow');
