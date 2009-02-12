@@ -87,6 +87,124 @@ function realname_menu() {
 }
 
 /**
+ * Implementation of hook_menu_alter().
+ */
+function realname_menu_alter(&$callbacks) {
+  $callbacks['user/%user_uid_optional']['title callback'] = 'realname_user_page_title';
+  $callbacks['user/%user_uid_optional']['page callback'] = 'realname_user_view';
+  $callbacks['user/%user_category/edit']['page callback'] = 'realname_user_edit';
+  if (isset($callbacks['user/%user/track'])) {
+    $callbacks['user/%user/track']['page callback'] = 'realname_tracker_page';
+  }
+  if (isset($callbacks['user/%user/contact'])) {
+    $callbacks['user/%user/contact']['page callback'] = 'realname_contact_user';
+  }
+  if (isset($callbacks['blog/%user_uid_optional'])) {
+    $callbacks['blog/%user_uid_optional']['page callback'] = 'realname_blog_page';
+  }
+//  foreach ($callbacks as $path => $stuff) {
+//    if (substr($path, 0, 10) == 'user/%user' && (!isset($stuff['type']) || $stuff['type'] & 128)) {
+//      drupal_set_message("$path => ". print_r($stuff, true));
+//    }
+//  }
+}
+
+/**
+ * Correct user page breadcrumbs.
+ */
+function realname_check_breadcrumbs($account) {
+  $trail = array(l(t('Home'), ''));
+  if ($account->uid == $GLOBALS['user']->uid) {
+    $trail[] = l(t('My account'), '/user/'. $account->uid);
+  }
+  else {
+    $trail[] = l($account->realname, '/user/'. $account->uid);
+  }
+
+  $trail = drupal_set_breadcrumb($trail);
+}
+
+/**
+ * Intercept the user page view. Modified from user.module.
+ * Fix some core bugs.
+ */
+function realname_user_view($account) {
+//  drupal_set_title(realname_user_page_title($account));
+  realname_check_breadcrumbs($account);
+  // Retrieve all profile fields and attach to $account->content.
+  user_build_content($account);
+
+  // To theme user profiles, copy modules/user/user_profile.tpl.php
+  // to your theme directory, and edit it as instructed in that file's comments.
+  return theme('user_profile', $account);
+}
+
+/**
+ * Intercept the user edit page. Modified from user.module.
+ * Fix some core bugs.
+ */
+function realname_user_edit($account, $category = 'account') {
+//  drupal_set_title(realname_user_page_title($account));
+  realname_check_breadcrumbs($account);
+  return drupal_get_form('user_profile_form', $account, $category);
+}
+
+/**
+ * Intercept the user blog page.
+ */
+function realname_blog_page($account) {
+  $output = blog_page_user($account);
+  drupal_set_title($title = t("@name's blog", array('@name' => $account->realname)));
+  return $output;
+}
+
+/**
+ * Intercept the tracker page.
+ */
+function realname_tracker_page($account = NULL, $set_title = FALSE) {
+  $output = tracker_page($account, $set_title);
+  if ($account) {
+    realname_check_breadcrumbs($account);    
+    drupal_set_title(realname_user_page_title($account));
+  }
+  return $output;
+}
+
+/**
+ * Intercept the Personal contact page.
+ */
+function realname_contact_user($account) {
+  global $user;
+
+  if (!valid_email_address($user->mail)) {
+    $output = t('You need to provide a valid e-mail address to contact other users. Please update your <a href="@url">user information</a> and try again.', array('@url' => url("user/$user->uid/edit")));
+  }
+  else if (!flood_is_allowed('contact', variable_get('contact_hourly_threshold', 3))) {
+    $output = t('You cannot contact more than %number users per hour. Please try again later.', array('%number' => variable_get('contact_hourly_threshold', 3)));
+  }
+  else {
+    realname_check_breadcrumbs($account);    
+//    drupal_set_title(realname_user_page_title($account));
+    $output = drupal_get_form('contact_mail_user', $account);
+  }
+
+  return $output;
+}
+
+/**
+ * Intercept the user page title.
+ */
+function realname_user_page_title($account) {
+  if ($account->uid == $GLOBALS['user']->uid) {
+    $name = t('My account');
+  }
+  else {
+    $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
+  }
+  return check_plain($name);
+}
+
+/**
  * An implementation of hook_theme_registry_alter()
  *
  * Swap in our own replacement for theme_username(), allowing the
