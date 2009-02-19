@@ -114,7 +114,7 @@ function realname_menu_alter(&$callbacks) {
  */
 function realname_check_breadcrumbs($account) {
   $trail = array(l(t('Home'), ''));
-  if ($account->uid == $GLOBALS['user']->uid) {
+  if ($account->uid == $GLOBALS['user']->uid && variable_get('realname_use_myacct', TRUE)) {
     $trail[] = l(t('My account'), '/user/'. $account->uid);
   }
   else {
@@ -195,12 +195,13 @@ function realname_contact_user($account) {
  * Intercept the user page title.
  */
 function realname_user_page_title($account) {
-  if ($account->uid == $GLOBALS['user']->uid) {
+  if ($account->uid == $GLOBALS['user']->uid && variable_get('realname_use_myacct', TRUE)) {
     $name = t('My account');
   }
   else {
     $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
   }
+  drupal_set_title(check_plain($name));
   return check_plain($name);
 }
 
@@ -717,6 +718,13 @@ function realname_admin_fields() {
     '#default_value' => variable_get('realname_notver', TRUE),
     );
 
+  $form['realname_use_myacct'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Show "My Account"') .'</strong>',
+    '#description' => t('Drupal core shows "My Account" rather than the user name when viewing one\'s own profile. Uncheck this to show the real name.'),
+    '#default_value' => variable_get('realname_use_myacct', TRUE),
+    );
+
   // If there were any URL fields, give a home page option.
   if ($links) {
     $links[''] = t('');
@@ -773,6 +781,7 @@ function realname_admin_fields_submit($form, &$form_state) {
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
   variable_set('realname_nofollow', $form_state['values']['realname_nofollow']);
+  variable_set('realname_use_myacct', $form_state['values']['realname_use_myacct']);
   variable_set('realname_homepage', $form_state['values']['realname_homepage']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');
