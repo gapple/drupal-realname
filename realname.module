@@ -102,11 +102,6 @@ function realname_menu_alter(&$callbacks) {
   if (isset($callbacks['blog/%user_uid_optional'])) {
     $callbacks['blog/%user_uid_optional']['page callback'] = 'realname_blog_page';
   }
-//  foreach ($callbacks as $path => $stuff) {
-//    if (substr($path, 0, 10) == 'user/%user' && (!isset($stuff['type']) || $stuff['type'] & 128)) {
-//      drupal_set_message("$path => ". print_r($stuff, true));
-//    }
-//  }
 }
 
 /**
@@ -403,54 +398,60 @@ function realname_make_name(&$account) {
   }
   $pattern = $pattern_saved;
 
-  // Has the profile been loaded?
-  if (!isset($account->{key($fields)})) {
-    $load_func = $module .'_load_profile';
-    if (!function_exists($load_func)) {
-      drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
+  // Has the module been set up yet?
+  if ($fields) {
+    // Has the profile been loaded?
+    if (!isset($account->{key($fields)})) {
+      $load_func = $module .'_load_profile';
+      if (!function_exists($load_func)) {
+        drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
+      }
+      module_invoke($module, 'load_profile', $account, $type);
+      if ($profile_privacy) {
+        profile_privacy_user('load', $edit, $account);
+      }
     }
-    module_invoke($module, 'load_profile', $account, $type);
-    if ($profile_privacy) {
-      profile_privacy_user('load', $edit, $account);
-    }
-  }
 
-  $stuff = array();
-  $i = 0;
-  foreach ($fields as $name => $weight) {
-    ++$i;
-    $private = 'private_'. $name;
-    // This will let you see that a user is using Profile Privacy.
-//    if (isset($account->{$private})) {
-//      drupal_set_message("$account->name ($account->uid) has marked the $name field as private.");
-//    }
-    $private_field = isset($account->{$private}) ? $account->{$private} : FALSE;
-    if (isset($account->$name) && !$private_field) {
-      if (is_array($account->$name)) {
-        $stuff['%'. $i] = $account->{$name}[0]['view'];
+    $stuff = array();
+    $i = 0;
+    foreach ($fields as $name => $weight) {
+      ++$i;
+      $private = 'private_'. $name;
+      // This will let you see that a user is using Profile Privacy.
+//      if (isset($account->{$private})) {
+//        drupal_set_message("$account->name ($account->uid) has marked the $name field as private.");
+//      }
+      $private_field = isset($account->{$private}) ? $account->{$private} : FALSE;
+      if (isset($account->$name) && !$private_field) {
+        if (is_array($account->$name)) {
+          $stuff['%'. $i] = $account->{$name}[0]['view'];
+        }
+        else {
+          $stuff['%'. $i] = $account->$name;
+        }
       }
       else {
-        $stuff['%'. $i] = $account->$name;
+        // If there is no value, remove the pattern piece, except the first.
+        $pattern = str_replace('%'. $i, NULL, $pattern);
       }
     }
-    else {
-      // If there is no value, remove the patterm piece, except the first.
-      $pattern = str_replace('%'. $i, NULL, $pattern);
+
+    // If no fields set, use username.
+    if (count($stuff) == 0) {
+      $stuff['%1'] = $account->name;
+      $pattern = '%1';
     }
-  }
 
-  // If no fields set, use username.
-  if (count($stuff) == 0) {
-    $stuff['%1'] = $account->name;
-    $pattern = '%1';
-  }
+    if ($homepage && $account->$homepage) {
+        $links[$account->uid] = $account->homepage = $account->$homepage;
+    }
 
-  if ($homepage && $account->$homepage) {
-      $links[$account->uid] = $account->homepage = $account->$homepage;
+    $string = trim(strtr($pattern, $stuff));
+    $users[$account->uid] = $string;
   }
-
-  $string = trim(strtr($pattern, $stuff));
-  $users[$account->uid] = $string;
+  else {
+    $string = $account->name;
+  }
   return $string;
 }
 
