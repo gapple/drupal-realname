@@ -23,20 +23,21 @@ function realname_enable() {
  * Implementation of hook_uninstall().
  */
 function realname_uninstall() {
-  variable_del('realname_pattern');
   variable_del('realname_fields');
-  variable_del('realname_theme');
-  variable_del('realname_max_username');
-  variable_del('realname_nodeapi');
-  variable_del('realname_notver');
-  variable_del('realname_nofollow');
   variable_del('realname_homepage');
+  variable_del('realname_max_username');
+  variable_del('realname_myacct');
+  variable_del('realname_nodeapi');
+  variable_del('realname_nofollow');
+  variable_del('realname_notver');
+  variable_del('realname_pattern');
   variable_del('realname_profile_module');
   variable_del('realname_profile_type');
+  variable_del('realname_theme');
 }
 
 /**
- * Implementation of hook_updare_N().
+ * Implementation of hook_update_N().
  */
 function realname_update_6100() {
   $ret = array();
@@ -48,6 +49,25 @@ function realname_update_6100() {
     variable_set('realname_profile_module', 'profile');
     $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_profile_module', 'profile')");
   }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function realname_update_6101() {
+  $ret = array();
+
+  if (variable_get('realname_use_myacct', TRUE)) {
+    variable_set('realname_myacct', 'My account');
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_myacct', 'My account')");
+  }
+  else {
+    variable_set('realname_myacct', NULL);
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('realname_myacct', NULL)");
+  }
+  variable_del('realname_use_myacct');
 
   return $ret;
 }
