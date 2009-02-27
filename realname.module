@@ -109,9 +109,10 @@ function realname_menu_alter(&$callbacks) {
  */
 function realname_check_breadcrumbs($account) {
   $trail = array(l(t('Home'), ''));
-  $myacct = variable_get('realname_myacct', NULL);
-  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
-    $trail[] = l(t($myacct), '/user/'. $account->uid);
+//  $myacct = variable_get('realname_myacct', NULL);
+//  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
+  if ($account->uid == $GLOBALS['user']->uid) {
+//    $trail[] = l(t($myacct), '/user/'. $account->uid);
   }
   else {
     $trail[] = l($account->realname, '/user/'. $account->uid);
@@ -125,7 +126,6 @@ function realname_check_breadcrumbs($account) {
  * Fix some core bugs.
  */
 function realname_user_view($account) {
-//  drupal_set_title(realname_user_page_title($account));
   realname_check_breadcrumbs($account);
   // Retrieve all profile fields and attach to $account->content.
   user_build_content($account);
@@ -140,7 +140,6 @@ function realname_user_view($account) {
  * Fix some core bugs.
  */
 function realname_user_edit($account, $category = 'account') {
-//  drupal_set_title(realname_user_page_title($account));
   realname_check_breadcrumbs($account);
   return drupal_get_form('user_profile_form', $account, $category);
 }
@@ -180,7 +179,6 @@ function realname_contact_user($account) {
   }
   else {
     realname_check_breadcrumbs($account);    
-//    drupal_set_title(realname_user_page_title($account));
     $output = drupal_get_form('contact_mail_user', $account);
   }
 
@@ -191,14 +189,15 @@ function realname_contact_user($account) {
  * Intercept the user page title.
  */
 function realname_user_page_title($account) {
-  $myacct = variable_get('realname_myacct', NULL);
-  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
-    $name = t($myacct);
+//  $myacct = variable_get('realname_myacct', NULL);
+//  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
+  if ($account->uid == $GLOBALS['user']->uid) {
+//    $name = t($myacct);
   }
   else {
     $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
   }
-  drupal_set_title(check_plain($name));
+//  drupal_set_title(check_plain($name));
   return check_plain($name);
 }
 
@@ -721,13 +720,13 @@ function realname_admin_fields() {
     '#default_value' => variable_get('realname_notver', TRUE),
     );
 
-  $form['realname_myacct'] = array(
-    '#type' => 'textfield',
-    '#size' => 20,
-    '#title' => t('Title for "My Account"'),
-    '#description' => t('When viewing one\'s own profile, this title will show. Leave it blank to show the user\'s name.'),
-    '#default_value' => variable_get('realname_myacct', NULL),
-    );
+//  $form['realname_myacct'] = array(
+//    '#type' => 'textfield',
+//    '#size' => 20,
+//    '#title' => t('Title for "My Account"'),
+//    '#description' => t('When viewing one\'s own profile, this title will show. Leave it blank to show the user\'s name.'),
+//    '#default_value' => variable_get('realname_myacct', NULL),
+//    );
 
   // If there were any URL fields, give a home page option.
   if ($links) {
@@ -785,7 +784,7 @@ function realname_admin_fields_submit($form, &$form_state) {
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
   variable_set('realname_nofollow', $form_state['values']['realname_nofollow']);
-  variable_set('realname_myacct', $form_state['values']['realname_myacct']);
+//  variable_set('realname_myacct', $form_state['values']['realname_myacct']);
   variable_set('realname_homepage', $form_state['values']['realname_homepage']);
 
   drupal_set_message(t('Configuration has been updated.'), 'status');
