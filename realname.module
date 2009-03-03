@@ -109,15 +109,10 @@ function realname_menu_alter(&$callbacks) {
  */
 function realname_check_breadcrumbs($account) {
   $trail = array(l(t('Home'), ''));
-//  $myacct = variable_get('realname_myacct', NULL);
-//  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
-  if ($account->uid == $GLOBALS['user']->uid) {
-//    $trail[] = l(t($myacct), '/user/'. $account->uid);
-  }
-  else {
+  // If we are looking at someone other than the current user, fix the breadcrumb.
+  if ($account->uid != $GLOBALS['user']->uid) {
     $trail[] = l($account->realname, '/user/'. $account->uid);
   }
-
   $trail = drupal_set_breadcrumb($trail);
 }
 
@@ -186,18 +181,10 @@ function realname_contact_user($account) {
 }
 
 /**
- * Intercept the user page title.
+ * Intercept the user page title to use the user's name.
  */
 function realname_user_page_title($account) {
-//  $myacct = variable_get('realname_myacct', NULL);
-//  if ($account->uid == $GLOBALS['user']->uid && $myacct) {
-  if ($account->uid == $GLOBALS['user']->uid) {
-//    $name = t($myacct);
-  }
-  else {
-    $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
-  }
-//  drupal_set_title(check_plain($name));
+  $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
   return check_plain($name);
 }
 
@@ -374,6 +361,11 @@ function realname_make_name(&$account) {
   static $links = array();
   static $edit = array();
 
+  // Return anonymous user right away.
+  if ($account->uid == 0) {
+    return $account->name;
+  }
+
   if (isset($users[$account->uid])) {
     $account->homepage = isset($links[$account->uid]) ? $links[$account->uid] : NULL;
     return $users[$account->uid];
@@ -444,7 +436,7 @@ function realname_make_name(&$account) {
     }
 
     if ($homepage && $account->$homepage) {
-        $links[$account->uid] = $account->homepage = $account->$homepage;
+      $links[$account->uid] = $account->$homepage;
     }
 
     $string = trim(strtr($pattern, $stuff));
@@ -719,14 +711,6 @@ function realname_admin_fields() {
     '#description' => t('Drupal core adds "Not verified" for anonymous users, this option allows that to be turned off.'),
     '#default_value' => variable_get('realname_notver', TRUE),
     );
-
-//  $form['realname_myacct'] = array(
-//    '#type' => 'textfield',
-//    '#size' => 20,
-//    '#title' => t('Title for "My Account"'),
-//    '#description' => t('When viewing one\'s own profile, this title will show. Leave it blank to show the user\'s name.'),
-//    '#default_value' => variable_get('realname_myacct', NULL),
-//    );
 
   // If there were any URL fields, give a home page option.
   if ($links) {
