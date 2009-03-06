@@ -32,6 +32,9 @@ function realname_token_values($type, $object = NULL, $options = array()) {
 //    case 'all':
     case 'global':
     case 'comment':
+      if (!isset($object->uid)) {
+        return;
+      }
       $tokens['realname'] = realname_make_name($object);
       $tokens['realname-link'] = theme('username', $object);
       $tokens['homepage'] = isset($object->homepage) ? $object->homepage : NULL;
