@@ -104,7 +104,7 @@ function realname_username($object, $options = array()) {
       $output = check_plain($object->name);
     }
 
-    if ($options['max_length']) {
+    if ($options['not_ver']) {
       $output .= ' ('. t('not verified') .')';
     }
   }
