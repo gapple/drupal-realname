@@ -417,6 +417,10 @@ function realname_form_alter(&$form, $form_state, $form_id) {
         $user->realname = realname_make_name($user);
       }
       $form['from']['#value'] = check_plain($user->realname) .' &lt;'. check_plain($user->mail) .'&gt;';
+      if (!isset($form['recipient']['#value']->realname)) {
+        $form['recipient']['#value']->realname = realname_make_name($form['recipient']['#value']);
+      }
+      $form['to']['#value'] = check_plain($form['recipient']['#value']->realname);
       break;
 
     case 'contact_mail_page':
@@ -434,7 +438,8 @@ function realname_form_alter(&$form, $form_state, $form_id) {
         '#default_value' => $pic,
         '#title' => t('User level image'),
         '#description' => t('This image will be shown when the user name is themed.
-          It can be used to show special attributes or user participation level.'),
+          It can be used to show special attributes or user participation level.
+          The path is relative to the files directory "%files".', array('%files' => file_directory_path())),
         '#field_suffix' => empty($pic) ? '' : '&nbsp;&nbsp;<img src="'. file_create_url($pic) .'" />',
         );
 
