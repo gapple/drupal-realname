@@ -52,7 +52,7 @@ function realname_username($object, $options = array()) {
     }
 
     if (user_access('access user profiles') && !$options['plain']) {
-      $l_opts = array();
+      $l_opts = array('absolute' => TRUE);
       if ($options['levels']) {
         // If there are no roles in this object (e.g. a node), go get them.
         if (!isset($object->roles)) {
@@ -67,10 +67,10 @@ function realname_username($object, $options = array()) {
           if (!isset($roles[$rid])) {
             // Use empty here because NULL is not set.
             $pic = variable_get('realname_user_level_'. $rid, '');
-            $roles[$rid] = empty($pic) ? '' : file_create_path($pic);
+            $roles[$rid] = empty($pic) ? '' : file_create_url($pic);
           }
           if ($roles[$rid]) {
-            $name .= '<img src="'. $roles[$rid] .'" />';
+            $name .= '<img src="'. $roles[$rid] .'" alt="'. $role .'" title="'. $role .'" />';
             $l_opts['html'] = TRUE;
           }
         }
