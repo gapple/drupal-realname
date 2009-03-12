@@ -141,7 +141,7 @@ function realname_check_breadcrumbs($account) {
   $trail = array(l(t('Home'), ''));
   // If we are looking at someone other than the current user, fix the breadcrumb.
   if ($account->uid != $GLOBALS['user']->uid) {
-    $trail[] = l($account->realname, '/user/'. $account->uid);
+    $trail[] = decode_entities(l($account->realname, '/user/'. $account->uid));
   }
   $trail = drupal_set_breadcrumb($trail);
 }
@@ -215,7 +215,7 @@ function realname_contact_user($account) {
  */
 function realname_user_page_title($account) {
   $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
-  return check_plain($name);
+  return $name;
 }
 
 /**
@@ -503,11 +503,15 @@ function realname_make_name(&$account) {
     $pattern_saved = variable_get('realname_pattern', ' ');
     $homepage = variable_get('realname_homepage', NULL);
     $use_theme = variable_get('realname_theme', TRUE);
-    $module = variable_get('realname_profile_module', 'profile');
+    $module = variable_get('realname_profile_module', NULL);
     $type = variable_get('realname_profile_type', NULL);
     $profile_privacy = module_exists('profile_privacy');
-    if ($module) {
+    if ($module && module_exists($module)) {
       include_once(drupal_get_path('module', 'realname') .'/realname_'. $module .'.inc');
+    }
+    else {
+      drupal_set_message(t('No module is available for RealName.'), 'error');
+      return $account->name;
     }
   }
   $pattern = $pattern_saved;
@@ -519,6 +523,7 @@ function realname_make_name(&$account) {
       $load_func = $module .'_load_profile';
       if (!function_exists($load_func)) {
         drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
+        return $account->name;
       }
       module_invoke($module, 'load_profile', $account, $type);
       if ($profile_privacy) {
