@@ -15,11 +15,15 @@
  * @param $options
  *   An associative array of theme options.
  *     'plain' => whether or not to make the name a link (default: FALSE)
+ *     'picture' => whether or not to include the user's picture (default: FALSE)
+ *        will not be done if 'plain' = TRUE.
  *     'homepage' => link may be to the user's homepage (default: TRUE)
  *     'levels' => include user level marking (default: TRUE)
  *     'max_length' => maximum name length to show (default: from settings page)
  *     'not_ver' => whether to show "not verified" (default: from settings page)
- * 
+ *     'allowed_tags' => an array of HTML tags that are allowed to remain in the name
+ *       if 'plain' is TRUE (default: 'em', 'i', 'u', 'strong', 'b')
+ *
  * @return
  *   A string containing an HTML link to the user's page if the passed object
  *   suggests that this is a site user. Otherwise, only the username is returned.
@@ -29,10 +33,12 @@ function realname_username($object, $options = array()) {
 
   $defaults = array(
     'plain' => FALSE,
+    'picture' => FALSE,
     'homepage' => TRUE,
     'levels' => TRUE,
     'max_length' => variable_get('realname_max_username', 20),
     'not_ver' => variable_get('realname_notver', TRUE),
+//    'allowed_tags' => array('em', 'i', 'u', 'strong', 'b'),
     );
   $options = array_merge($defaults, $options);
 
@@ -88,9 +94,13 @@ function realname_username($object, $options = array()) {
       }
       $l_opts['attributes']['title'] = $title;
       $output = l($name, $url, $l_opts);
+      if ($options['picture']) {
+        $output .= theme('user_picture', $object);
+      }
     }
     else {
       $output = check_plain($name);
+//      $output = drupal_validate_utf8($name) ? strip_tags($name, $options['allowed_tags']) : '';
     }
   }
   elseif ($object->name) {
@@ -102,6 +112,7 @@ function realname_username($object, $options = array()) {
     }
     else {
       $output = check_plain($object->name);
+//      $output = drupal_validate_utf8($name) ? strip_tags($name, $options['allowed_tags']) : '';
     }
 
     if ($options['not_ver']) {
