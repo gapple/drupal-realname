@@ -168,7 +168,6 @@ function realname_search($op = 'search', $keys = null, $skip_access_check = FALS
  */
 function realname_update_index() {
   $start = variable_get('realname_last_index', -1) + 1;
- $start = 0;
   $limit = (int)variable_get('search_cron_limit', 100);
   watchdog('RealName',
     'Indexing up to !limit users, starting at !start',
