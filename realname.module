@@ -152,7 +152,8 @@ function realname_search($op = 'search', $keys = null, $skip_access_check = FALS
             'title' => $realname,
             'user' => theme('username', $account) . '<div class="clear-block"></div>',
             'score' => $item->score,
-            'snippet' => theme('user_picture', $account) . t('Login name: !name', array('!name' => $account->name)),
+            'snippet' => theme('user_picture', $account)
+              . (user_access('administer users') ? t('Login name: !name', array('!name' => $account->name)) : NULL),
             );
           }
         return $results;
