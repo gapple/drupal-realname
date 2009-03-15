@@ -15,7 +15,7 @@
  * @TODO: move this admin stuff to separate file.
  */
 function realname_admin_settings() {
-  return drupal_get_form('realname_admin_fields');
+  return drupal_get_form('realname_admin_general');
 }
 
 function realname_admin_general() {
@@ -26,6 +26,28 @@ function realname_admin_general() {
     '#title' => '<strong>'. t('Show realname in nodes') .'</strong>',
     '#description' => t('If this option is selected, the "Real name" will be used on node displays.'),
     '#default_value' => variable_get('realname_nodeapi', FALSE),
+    );
+
+  $form['search'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Search options'),
+    '#description' => t('These settings control how RealName search will work.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    );
+
+  $form['search']['realname_search_enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Enable realname search') .'</strong>',
+    '#description' => t('If this option is selected, the "Real name" searching will be allowed. It may be necessary to clear the cache for this to be fully enabled.'),
+    '#default_value' => variable_get('realname_search_enable', FALSE),
+    );
+
+  $form['search']['realname_search_login'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Include login name in search') .'</strong>',
+    '#description' => t('Should the "Real name" search also index the login name?'),
+    '#default_value' => variable_get('realname_search_login', FALSE),
     );
 
   $form['theme'] = array(

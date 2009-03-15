@@ -6,8 +6,6 @@
  * The RealName module allows the admin to choose fields from the user profile
  * that will be used to add a "realname" element (method) to a user object.
  * Hook_user is used to automatically add this to any user object that is loaded.
- *
- * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
  */
   define('MODULE_VERSION', '$Id$');
 
@@ -73,21 +71,21 @@ function realname_menu() {
     'file' => 'realname.admin.inc',
     );
 
-  $items['admin/user/realname/fields'] = array(
-    'title' => 'Fields',
-    'access arguments' => array('administer users'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('realname_admin_fields'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'realname.admin.inc',
-    'weight' => 0,
-    );
-
   $items['admin/user/realname/general'] = array(
     'title' => 'General',
     'access arguments' => array('administer users'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('realname_admin_general'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'realname.admin.inc',
+    'weight' => 0,
+    );
+
+  $items['admin/user/realname/fields'] = array(
+    'title' => 'Fields',
+    'access arguments' => array('administer users'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('realname_admin_fields'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 2,
@@ -114,72 +112,6 @@ function realname_menu() {
     );
 
   return $items;
-}
-
-/**
- * Implementation of hook_search().
- */
-function realname_search($op = 'search', $keys = null, $skip_access_check = FALSE) {
-  switch ($op) {
-    case 'name':
-      if ($skip_access_check || user_access('access user profiles')) {      
-        return t('User name');
-      }
-
-    case 'reset':
-      variable_set('realname_last_index', -1);
-      return;
-
-    case 'status':
-      $start = variable_get('realname_last_index', -1) + 1;
-      $total = db_result(db_query('SELECT COUNT(*) FROM {users} WHERE status=1'));
-      $remaining = db_result(db_query("SELECT COUNT(*) FROM {users} WHERE status=1 AND uid>=%d", $start));
-      return array('remaining' => $remaining, 'total' => $total);
-
-    case 'search':
-      if ($skip_access_check || user_access('access user profiles')) {      
-        $results = array();
-        $find = do_search($keys, 'realname');
-        foreach ($find as $item) {
-          if ($item->type != 'realname') {
-            continue;
-          }
-          $account = db_fetch_object(db_query("SELECT u.uid, u.name, u.picture FROM {users} u WHERE u.uid=%d", $item->sid));
-          $realname = realname_make_name($account);
-          $results[] = array(
-            'link' => url('user/'. $item->sid, array('absolute' => TRUE)),
-            'type' => t('User'),
-            'title' => $realname,
-            'user' => theme('username', $account) . '<div class="clear-block"></div>',
-            'score' => $item->score,
-            'snippet' => theme('user_picture', $account)
-              . (user_access('administer users') ? t('Login name: !name', array('!name' => $account->name)) : NULL),
-            );
-          }
-        return $results;
-      }
-      else {
-       drupal_set_message("you don't have access for RealName.");
-      }
-  }
-}
-
-/**
- * Implementation of hook_update_index().
- */
-function realname_update_index() {
-  $start = variable_get('realname_last_index', -1) + 1;
-  $limit = (int)variable_get('search_cron_limit', 100);
-  watchdog('RealName',
-    'Indexing up to !limit users, starting at !start',
-    array('!start' => $start, '!limit' => $limit),
-    WATCHDOG_NOTICE);
-  $result = db_query_range("SELECT uid, name FROM {users} WHERE status=1 AND uid>=%d", $start, 0, $limit);
-  while ($account = db_fetch_object($result)) {
-    $realname = realname_make_name($account);
-    search_index($account->uid, 'realname', $realname .' '. $account->name);
-    variable_set('realname_last_index', $account->uid);
-  }
 }
 
 /**
@@ -527,6 +459,77 @@ function _realname_role_submit($form, &$form_state) {
   $pic = $form_state['values']['level'];
   variable_set('realname_user_level_'. $rid, $pic);  
 //  drupal_set_message("realname_user_level_$rid => '$pic'");  
+}
+
+/**
+ * Implementation of hook_search().
+ */
+function realname_search($op = 'search', $keys = null, $skip_access_check = FALSE) {
+  if (!variable_get('realname_search_enable', FALSE)) {
+    return;
+  }
+  switch ($op) {
+    case 'name':
+      if ($skip_access_check || user_access('access user profiles')) {      
+        return t('User name');
+      }
+
+    case 'reset':
+      variable_set('realname_last_index', -1);
+      return;
+
+    case 'status':
+      $start = variable_get('realname_last_index', -1) + 1;
+      $total = db_result(db_query('SELECT COUNT(*) FROM {users} WHERE status=1'));
+      $remaining = db_result(db_query("SELECT COUNT(*) FROM {users} WHERE status=1 AND uid>=%d", $start));
+      return array('remaining' => $remaining, 'total' => $total);
+
+    case 'search':
+      if ($skip_access_check || user_access('access user profiles')) {      
+        $results = array();
+        $find = do_search($keys, 'realname');
+        foreach ($find as $item) {
+          if ($item->type != 'realname') {
+            continue;
+          }
+          $account = db_fetch_object(db_query("SELECT u.uid, u.name, u.picture FROM {users} u WHERE u.uid=%d", $item->sid));
+          $realname = realname_make_name($account);
+          $results[] = array(
+            'link' => url('user/'. $item->sid, array('absolute' => TRUE)),
+            'type' => t('User'),
+            'title' => $realname,
+            'user' => theme('username', $account) . '<div class="clear-block"></div>',
+            'score' => $item->score,
+            'snippet' => theme('user_picture', $account)
+              . (user_access('administer users') ? t('Login name: !name', array('!name' => $account->name)) : NULL),
+            );
+          }
+        return $results;
+      }
+  }
+}
+
+/**
+ * Implementation of hook_update_index().
+ */
+function realname_update_index() {
+  if (variable_get('realname_search_enable', FALSE)) {
+    $start = variable_get('realname_last_index', -1) + 1;
+    $limit = (int)variable_get('search_cron_limit', 100);
+    watchdog('RealName',
+      'Indexing up to !limit users, starting at !start',
+      array('!start' => $start, '!limit' => $limit),
+      WATCHDOG_NOTICE);
+    $result = db_query_range("SELECT uid, name FROM {users} WHERE status=1 AND uid>=%d", $start, 0, $limit);
+    while ($account = db_fetch_object($result)) {
+      $index_text = realname_make_name($account);
+      if (variable_get('realname_search_login', FALSE)) {
+        $index_text .= ' '. $account->name;
+      }
+      search_index($account->uid, 'realname', $index_text);
+      variable_set('realname_last_index', $account->uid);
+    }
+  }
 }
 
 //********************************************************************
