@@ -36,11 +36,24 @@ function realname_admin_general() {
     '#collapsed' => FALSE,
     );
 
+  $search_enable = variable_get('realname_search_enable', FALSE);
+  $user_disable = variable_get('realname_user_disable', FALSE);
+
+  $form['original_search_enable'] = array('#type' => 'value', '#value' => $search_enable);
+  $form['original_user_disable'] = array('#type' => 'value', '#value' => $user_disable);
+
   $form['search']['realname_search_enable'] = array(
     '#type' => 'checkbox',
     '#title' => '<strong>'. t('Enable realname search') .'</strong>',
-    '#description' => t('If this option is selected, the "Real name" searching will be allowed. It may be necessary to clear the cache for this to be fully enabled.'),
-    '#default_value' => variable_get('realname_search_enable', FALSE),
+    '#description' => t('If this option is selected, the "Real name" searching will be allowed. The menus will be rebuilt if this setting changes.'),
+    '#default_value' => $search_enable,
+    );
+
+  $form['search']['realname_user_disable'] = array(
+    '#type' => 'checkbox',
+    '#title' => '<strong>'. t('Disable user search') .'</strong>',
+    '#description' => t('If this option is selected, the standard "Users" search page will be disabled. The menus will be rebuilt if this setting changes.'),
+    '#default_value' => $user_disable,
     );
 
   $form['search']['realname_search_login'] = array(
@@ -80,7 +93,40 @@ function realname_admin_general() {
     '#default_value' => variable_get('realname_notver', TRUE),
     );
 
-  return system_settings_form($form);
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+    );
+    
+  return $form;
+}
+
+function realname_admin_general_validate($form, &$form_state) {
+  // If realname_search is not enabled, then we won't disable user_search.
+  if (!$form_state['values']['realname_search_enable'] && 
+    $form_state['values']['realname_user_disable']) {
+    form_set_error('realname_user_disable', t('User search disable cannot be used if RealName search is not enabled.'));
+  }
+}
+
+function realname_admin_general_submit($form, &$form_state) {
+  variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
+  variable_set('realname_search_enable', $form_state['values']['realname_search_enable']);
+  variable_set('realname_user_disable', $form_state['values']['realname_user_disable']);
+  variable_set('realname_search_login', $form_state['values']['realname_search_login']);
+  variable_set('realname_theme', $form_state['values']['realname_theme']);
+  variable_set('realname_max_username', $form_state['values']['realname_max_username']);
+  variable_set('realname_notver', $form_state['values']['realname_notver']);
+
+  // Did the admin change the search enable or user disable settings?
+  if ($form_state['values']['original_search_enable'] != $form_state['values']['realname_search_enable']
+    || $form_state['values']['original_user_disable'] != $form_state['values']['realname_user_disable']) {
+    // Yes, so we have to rebuild the menu.
+    menu_rebuild();
+    drupal_set_message(t('The menu router has been rebuilt.'));
+  }
+
+  drupal_set_message(t('Configuration saved.'));
 }
 
 function realname_admin_bypass() {
@@ -314,6 +360,7 @@ function realname_admin_fields() {
       '#default_value' => variable_get('realname_nofollow', FALSE),
       );
   }
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),

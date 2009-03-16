@@ -18,6 +18,13 @@
 //********************************************************************/
 
 /**
+ * Implementation of hook_init().
+ */
+//function realname_init() {
+//  rename_function('user_search', '_user_search');
+//}
+
+/**
  * Implementation of hook_help().
  */
 function realname_help($path, $args = NULL) {
@@ -129,6 +136,11 @@ function realname_menu_alter(&$callbacks) {
   }
   if (isset($callbacks['blog/%user_uid_optional'])) {
     $callbacks['blog/%user_uid_optional']['page callback'] = 'realname_blog_page';
+  }
+  // Remove the core user_search, if requested.
+  if (variable_get('realname_user_disable', FALSE) && isset($callbacks['search/user/%menu_tail'])) {
+    unset ($callbacks['search/user/%menu_tail']);
+    drupal_set_message(t('User module search disabled.'));
   }
 }
 
@@ -388,7 +400,6 @@ function realname_form_alter(&$form, $form_state, $form_id) {
   if (!user_access('use realname')) {
     return;
   }
-//  drupal_set_message($form_id);
 
   $bypass_forms = variable_get('realname_bypass_forms', array(array('name' => 'comment_form', 'fields' => array('name'))));
   foreach ($bypass_forms as $bypass) {
@@ -458,7 +469,6 @@ function _realname_role_submit($form, &$form_state) {
   $rid = $form_state['values']['rid'];
   $pic = $form_state['values']['level'];
   variable_set('realname_user_level_'. $rid, $pic);  
-//  drupal_set_message("realname_user_level_$rid => '$pic'");  
 }
 
 /**
@@ -471,7 +481,7 @@ function realname_search($op = 'search', $keys = null, $skip_access_check = FALS
   switch ($op) {
     case 'name':
       if ($skip_access_check || user_access('access user profiles')) {      
-        return t('User name');
+        return variable_get('realname_user_disable', FALSE) ? t('Users') : t('User names');
       }
 
     case 'reset':
