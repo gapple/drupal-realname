@@ -28,6 +28,13 @@ function realname_admin_general() {
     '#default_value' => variable_get('realname_nodeapi', FALSE),
     );
 
+  $form['realname_myacct'] = array(
+    '#type' => 'textfield',
+    '#title' => '<strong>'. t('Title for own account') .'</strong>',
+    '#description' => t('This will be shown instead of "My account" on the user\'s own account pages and in the menu. If it is empty, the user\'s RealName will be shown.'),
+    '#default_value' => variable_get('realname_myacct', t('My account')),
+    );
+
   $form['search'] = array(
     '#type' => 'fieldset',
     '#title' => t('Search options'),
@@ -111,6 +118,7 @@ function realname_admin_general_validate($form, &$form_state) {
 
 function realname_admin_general_submit($form, &$form_state) {
   variable_set('realname_nodeapi', $form_state['values']['realname_nodeapi']);
+  variable_set('realname_myacct', $form_state['values']['realname_myacct']);
   variable_set('realname_search_enable', $form_state['values']['realname_search_enable']);
   variable_set('realname_user_disable', $form_state['values']['realname_user_disable']);
   variable_set('realname_search_login', $form_state['values']['realname_search_login']);

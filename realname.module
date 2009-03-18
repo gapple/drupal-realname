@@ -225,8 +225,9 @@ function realname_contact_user($account) {
  */
 function realname_user_page_title($account) {
   global $user;
-  if ($user->uid == $account->uid) {
-    return t('My account');
+  $myacct = variable_get('realname_myacct', t('My account'));
+  if ($user->uid == $account->uid && $myacct) {
+    return $myacct;
   }
   $name = (isset($account->realname) ? $account->realname : realname_make_name($account));
   return $name;
