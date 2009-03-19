@@ -139,7 +139,7 @@ function realname_menu_alter(&$callbacks) {
   }
   // Remove the core user_search, if requested.
   if (variable_get('realname_user_disable', FALSE) && isset($callbacks['search/user/%menu_tail'])) {
-    unset ($callbacks['search/user/%menu_tail']);
+    unset($callbacks['search/user/%menu_tail']);
     drupal_set_message(t('User module search disabled.'));
   }
 }
@@ -479,7 +479,7 @@ function _realname_role_submit($form, &$form_state) {
 /**
  * Implementation of hook_search().
  */
-function realname_search($op = 'search', $keys = null, $skip_access_check = FALSE) {
+function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALSE) {
   if (!variable_get('realname_search_enable', FALSE)) {
     return;
   }
@@ -513,7 +513,7 @@ function realname_search($op = 'search', $keys = null, $skip_access_check = FALS
             'link' => url('user/'. $item->sid, array('absolute' => TRUE)),
             'type' => t('User'),
             'title' => $realname,
-            'user' => theme('username', $account) . '<div class="clear-block"></div>',
+            'user' => theme('username', $account) .'<div class="clear-block"></div>',
             'score' => $item->score,
             'snippet' => theme('user_picture', $account)
               . (user_access('administer users') ? t('Login name: !name', array('!name' => $account->name)) : NULL),
