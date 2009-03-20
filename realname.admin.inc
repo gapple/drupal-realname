@@ -132,6 +132,7 @@ function realname_admin_general_submit($form, &$form_state) {
     // Yes, so we have to rebuild the menu.
     menu_rebuild();
     drupal_set_message(t('The menu router has been rebuilt.'));
+    watchdog('RealName', 'User module search disabled.');
   }
 
   drupal_set_message(t('Configuration saved.'));

@@ -18,13 +18,6 @@
 //********************************************************************/
 
 /**
- * Implementation of hook_init().
- */
-//function realname_init() {
-//  rename_function('user_search', '_user_search');
-//}
-
-/**
  * Implementation of hook_help().
  */
 function realname_help($path, $args = NULL) {
@@ -140,7 +133,6 @@ function realname_menu_alter(&$callbacks) {
   // Remove the core user_search, if requested.
   if (variable_get('realname_user_disable', FALSE) && isset($callbacks['search/user/%menu_tail'])) {
     unset($callbacks['search/user/%menu_tail']);
-    drupal_set_message(t('User module search disabled.'));
   }
 }
 
