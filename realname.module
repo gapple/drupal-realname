@@ -184,7 +184,13 @@ function realname_blog_page($account) {
  * Intercept the tracker page.
  */
 function realname_tracker_page($account = NULL, $set_title = FALSE) {
-  $output = tracker_page($account, $set_title);
+  if (function_exists('tracker2_page')) {
+    $output = tracker2_page($account, $set_title);
+  }
+  else {
+    $output = tracker_page($account, $set_title);
+  }
+  
   if ($account) {
     realname_check_breadcrumbs($account);    
     drupal_set_title(realname_user_page_title($account));
