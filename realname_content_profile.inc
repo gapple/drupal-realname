@@ -57,7 +57,10 @@ function realname_content_profile_get_fields($current, $type) {
       }
       switch ($field_attributes['type']) {
         case 'text':
-          if (!$field_attributes['multiple']) {
+          if ($field_attributes['multiple']) {
+            drupal_set_message(t('The RealName module does not currently support fields with multiple values, such as @fld.', array('@fld' => $field_name)), 'warning');
+          }
+          else {
             $selected = array_key_exists($field_name, $current);
             $fields[$field_name] = array(
               'title' => $field_attributes['widget']['label'],
