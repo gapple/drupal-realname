@@ -28,6 +28,15 @@ function realname_admin_general() {
     '#default_value' => variable_get('realname_nodeapi', FALSE),
     );
 
+  if ( module_exists('views') ) {  
+    $form['realname_view'] = array(
+      '#type' => 'checkbox',
+      '#title' => '<strong>'. t('Overwrite user fields in view to show realnames') .'</strong>',
+      '#description' => t('This option will overwrite the default user name definition in Views in order to show Realnames without the need to modify Views. Remember to rebuild your Views cache if you change this option.'),
+      '#default_value' => variable_get('realname_view', FALSE),
+      );
+  }  
+
   $form['realname_myacct'] = array(
     '#type' => 'textfield',
     '#title' => '<strong>'. t('Title for own account') .'</strong>',
@@ -183,6 +192,9 @@ function realname_admin_bypass_submit($form, &$form_state) {
     }
   }
   variable_set('realname_bypass_forms', $bypass_forms);
+  // Mark form for realname recalculation.
+  variable_set('realname_recalculate', TRUE);
+
   drupal_set_message(t('Information saved for !count forms.', array('!count' => count($bypass_forms))), 'status');
 }
 
@@ -260,6 +272,9 @@ function realname_admin_module_submit($form, &$form_state) {
       }
     }
   }
+  // Mark form for realname recalculation.
+  variable_set('realname_recalculate', TRUE);
+
   // We are done with types, so go pick fields.
   unset($form_state['storage']);
   $form_state['redirect'] = 'admin/user/realname/fields'; // Go get the fields now.
@@ -404,5 +419,36 @@ function realname_admin_fields_submit($form, &$form_state) {
   variable_set('realname_homepage', $form_state['values']['realname_homepage']);
   variable_set('realname_nofollow', $form_state['values']['realname_nofollow']);
 
+  // Mark form for realname recalculation.
+  variable_set('realname_recalculate', TRUE);
+
   drupal_set_message(t('Configuration has been updated.'), 'status');
 }
+
+/**
+ * Real names rebuild (in case of config change) handlers.
+ */
+ 
+/**
+ * Menu callback: confirm rebuilding of realnames.
+ */
+function realname_rebuild_confirm() {
+  return confirm_form(array(), t('Are you sure you want to rebuild the RealNames for all site users?'),
+    'admin/user/realname', t('This action rebuilds RealNames for all users, and may be a lengthy process.
+    This action cannot be undone.'), t('Rebuild realnames'), t('Cancel'));
+}
+
+/**
+ * Handler for rebuild confirmation
+ */
+function realname_rebuild_confirm_submit($form, &$form_state) {
+  $batch = array(
+    'title' => t('Rebuilding realnames'),
+    'operations' => array(
+      array('_realname_rebuild_realnames', array()),
+      ),
+    'finished' => '_realname_rebuild_batch_finished'
+  );
+  batch_set($batch);
+}
+
