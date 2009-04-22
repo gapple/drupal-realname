@@ -5,7 +5,6 @@
  * @file
  * The RealName module allows the admin to choose fields from the user profile
  * that will be used to add a "realname" element (method) to a user object.
- * Hook_user is used to automatically add this to any user object that is loaded.
  */
   define('MODULE_VERSION', '$Id$');
 
@@ -346,14 +345,10 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
 
     case 'insert':
     case 'after_update':
-//      $realname->uid = $account->uid;
       $account->realname = _realname_make_name($account);
       // Try to update, if fail - try to insert.
       db_query("DELETE FROM {realname} WHERE uid=%d", $account->uid);
-//      if (!drupal_write_record('realname', $account, 'uid')) {
-        drupal_write_record('realname', $account);
-//      }
-     drupal_set_message(print_r($account, true));
+      drupal_write_record('realname', $account);
   }
 }
 
@@ -785,10 +780,10 @@ function realname_ajax_autocomplete_user($string = '') {
   $last_string = trim(array_pop($array));
   $matches = array();
   if ($last_string != '') {
-    $prefix = count($array) ? implode(', ', $array) . ', ' : '';
+    $prefix = count($array) ? implode(', ', $array) .', ' : '';
 
     if (strpos('anonymous', strtolower($last_string)) !== FALSE) {
-      $matches[$prefix . 'Anonymous'] = 'Anonymous';
+      $matches[$prefix .'Anonymous'] = 'Anonymous';
     }
     $result = db_query_range("SELECT realname FROM {realname} WHERE LOWER(realname) LIKE LOWER('%s%%')", $last_string, 0, 10);
 
@@ -796,7 +791,7 @@ function realname_ajax_autocomplete_user($string = '') {
       $n = $account->realname;
       // Commas and quotes in terms are special cases, so encode 'em.
       if (strpos($account->realname, ',') !== FALSE || strpos($account->realname, '"') !== FALSE) {
-        $n = '"' . str_replace('"', '""', $account->realname) . '"';
+        $n = '"'. str_replace('"', '""', $account->realname) .'"';
       }
       $matches[$prefix . $n] = check_plain($account->realname);
     }

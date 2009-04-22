@@ -19,7 +19,7 @@ function realname_views_data() {
     'table' => array(
       'group' => t('Realname'),
       'join' => array(
-        'users' => array (
+        'users' => array(
           'field' => 'uid',
           'left_field' => 'uid'
           )

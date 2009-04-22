@@ -151,7 +151,7 @@ function realname_update_6102() {
 
   // Populate table using current settings.
   // @TODO: User processing can take quite long. We probably need to use BATCH API
-  $module = variable_get('realname_profile_module' , null);
+  $module = variable_get('realname_profile_module' , NULL);
   if ($module) {
     include_once(drupal_get_path('module', 'realname') .'/realname.module');
     $result = db_query("SELECT u.uid, u.name FROM {users} u");
@@ -159,7 +159,7 @@ function realname_update_6102() {
       $realname = _realname_make_name($row);
       db_query("INSERT INTO {realname} (uid, realname) VALUES(%d, '%s')", $row->uid, $realname);
     }
-    $ret[] = array('success' => TRUE, 'query' => t('Realnames has been recalculated'));
+    $ret[] = array('success' => TRUE, 'query' => t('Realnames have been recalculated'));
   }
   else {
     drupal_set_message(t('The Realname module has been updated. In order to start using it, you have to select a profile module to be used.'), 'warning');
