@@ -591,8 +591,12 @@ function realname_update_index() {
   if (variable_get('realname_search_enable', FALSE)) {
     $start = variable_get('realname_last_index', -1) + 1;
     $limit = (int)variable_get('search_cron_limit', 100);
-    watchdog('RealName',
-      'Indexing up to !limit users, starting at !start',
+    $how_many = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE  status=1 AND uid>=%d", $start));
+    $limit = min($limit, $how_many);
+    if ($limit < 1) {
+      return;
+    }
+    watchdog('RealName', 'Indexing up to !limit users, starting at !start',
       array('!start' => $start, '!limit' => $limit),
       WATCHDOG_NOTICE);
     $result = db_query_range("SELECT uid, name FROM {users} WHERE status=1 AND uid>=%d", $start, 0, $limit);
