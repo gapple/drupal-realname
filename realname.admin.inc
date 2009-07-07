@@ -28,6 +28,18 @@ function realname_admin_general() {
     '#default_value' => variable_get('realname_nodeapi', FALSE),
     );
 
+  if (variable_get('realname_profile_module', NULL) == 'content_profile') {
+    $form['realname_use_title'] = array(
+      '#type' => 'checkbox',
+      '#title' => '<strong>'. t('Add node title to available fields') .'</strong>',
+      '#description' => t('This option allows you to include the profile title in the list of available fields.'),
+      '#default_value' => variable_get('realname_use_title', FALSE),
+      );
+  }
+  else {
+    $form['realname_use_title'] = array('#type' => 'value', '#value' => FALSE);    
+  }
+  
   if ( module_exists('views') ) {  
     $form['realname_view'] = array(
       '#type' => 'checkbox',
@@ -134,6 +146,7 @@ function realname_admin_general_submit($form, &$form_state) {
   variable_set('realname_theme', $form_state['values']['realname_theme']);
   variable_set('realname_max_username', $form_state['values']['realname_max_username']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
+  variable_set('realname_use_title', $form_state['values']['realname_use_title']);
 
   // Did the admin change the search enable or user disable settings?
   if ($form_state['values']['original_search_enable'] != $form_state['values']['realname_search_enable']

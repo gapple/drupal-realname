@@ -78,6 +78,15 @@ function realname_content_profile_get_fields($current, $type) {
   else {
     drupal_set_message(t('The !type content type has no fields to use.', array('!type' => $type)), 'error');
   }
+
+  if (variable_get('realname_use_title', FALSE)) {
+    $fields['title'] = array(
+      'title' => t('Node title'),
+      'weight' => isset($current['title']) ? $current['title']['weight'] : 0,
+      'selected' => array_key_exists('title', $current),
+      );
+  }
+
   return array('fields' => $fields, 'links' => $links);
 }
 

@@ -73,6 +73,7 @@ function realname_uninstall() {
   variable_del('realname_search_enable');
   variable_del('realname_search_login');
   variable_del('realname_theme');
+  variable_del('realname_use_title');
   variable_del('realname_user_disable');
 
   drupal_uninstall_schema('realname');

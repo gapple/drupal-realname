@@ -7,7 +7,7 @@
 
 function realname_profile_get_fields($current) {
   $fields = $links = array();
-  $result = db_query("SELECT * FROM {profile_fields}");
+  $result = db_query("SELECT name, type, title FROM {profile_fields}");
   while ($field = db_fetch_array($result)) {
     switch ($field['type']) {
       case 'selection':
@@ -29,5 +29,6 @@ function realname_profile_get_fields($current) {
         break;
     }
   }
+
   return array('fields' => $fields, 'links' => $links);
 }
