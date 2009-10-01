@@ -147,6 +147,7 @@ function realname_admin_general_submit($form, &$form_state) {
   variable_set('realname_max_username', $form_state['values']['realname_max_username']);
   variable_set('realname_notver', $form_state['values']['realname_notver']);
   variable_set('realname_use_title', $form_state['values']['realname_use_title']);
+  variable_set('realname_view', $form_state['values']['realname_view']);
 
   // Did the admin change the search enable or user disable settings?
   if ($form_state['values']['original_search_enable'] != $form_state['values']['realname_search_enable']
@@ -452,6 +453,51 @@ function realname_rebuild_confirm() {
 }
 
 /**
+ * Batchable function used to rebuild realnames
+ */
+function _realname_rebuild_realnames(&$context) {
+  if (empty($context['sandbox'])) {
+    // Initiate multistep processing.
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['current_user'] = 0;
+    $context['sandbox']['max'] = db_result(db_query('SELECT COUNT(DISTINCT uid) FROM {users}'));
+  }
+
+  // Process the next 20 users.
+  $limit = 20;
+  $result = db_query_range("SELECT u.uid, u.name, u.mail FROM {users} u WHERE uid > %d ORDER BY uid ASC", $context['sandbox']['current_user'], 0, $limit);
+  while ($row = db_fetch_object($result)) {
+    $realname->uid = $row->uid;
+    $realname->realname = _realname_make_name($row);
+    // Try to update, if fail - try to insert.
+    if (db_result(db_query('SELECT COUNT(uid) FROM {realname} WHERE uid=%d', $realname->uid))) {
+      drupal_write_record('realname', $realname, 'uid');
+    }
+    else {
+      drupal_write_record('realname', $realname);
+    }
+    $context['sandbox']['progress']++;
+    $context['sandbox']['current_user'] = $row->uid;
+  }
+
+  // Multistep processing : report progress.
+  if ($context['sandbox']['progress'] != ($context['sandbox']['max']) - 1) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+function _realname_rebuild_batch_finished($success, $results, $operations) {
+  if ($success) {
+    drupal_set_message(t('The realnames have been rebuilt.'));
+    variable_set('realname_recalculate', FALSE);
+    drupal_goto('admin/user/realname');
+  }
+  else {
+    drupal_set_message(t('The realnames have not been properly rebuilt.'), 'error');
+  }
+}
+
+/**
  * Handler for rebuild confirmation
  */
 function realname_rebuild_confirm_submit($form, &$form_state) {
@@ -460,7 +506,8 @@ function realname_rebuild_confirm_submit($form, &$form_state) {
     'operations' => array(
       array('_realname_rebuild_realnames', array()),
       ),
-    'finished' => '_realname_rebuild_batch_finished'
+    'file' => drupal_get_path('module', 'realname') . '/realname.admin.inc',
+    'finished' => '_realname_rebuild_batch_finished',
   );
   batch_set($batch);
 }

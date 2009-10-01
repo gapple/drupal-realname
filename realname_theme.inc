@@ -40,7 +40,7 @@ function realname_username($object, $options = array()) {
     'not_ver' => variable_get('realname_notver', TRUE),
 //    'allowed_tags' => array('em', 'i', 'u', 'strong', 'b'),
     );
-  $options = array_merge($defaults, $options);
+  $options = array_merge($defaults, (array)$options);
 
   // If we have a user id but no realname, then make one.
   if ($object->uid && empty($object->realname) && user_access('use realname')) {

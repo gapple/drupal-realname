@@ -14,6 +14,7 @@ function content_profile_load_profile(&$account, $type = NULL) {
     return;
   }
   $fields = content_fields(NULL, $type);
+  
   foreach ($fields as $field_name => $field_attributes) {
     if (isset($profile->$field_name)) {
       $values = array();
@@ -40,6 +41,8 @@ function content_profile_load_profile(&$account, $type = NULL) {
       }
     }
   }
+  
+  $account->title = $profile->title;
 }
 
 function realname_content_profile_get_types() {
