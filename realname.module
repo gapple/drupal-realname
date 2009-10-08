@@ -699,16 +699,16 @@ function realname_make_name(&$account) {
     return $users[$account->uid];
   }
 
-  // Check DB next
-  $query = "SELECT realname from {realname} WHERE uid=%d";
-  $result = db_result(db_query($query, $account->uid));
-
-  if ($result) { // we've succeed
-    return $result;
-  }
-
   $result = _realname_make_name($account);
-  db_query("INSERT INTO {realname} (uid, realname) VALUES(%d, '%s')", $account->uid, $result);
+  if (empty($result)) {
+    return $account->name;
+  }
+  if (!db_result(db_query("SELECT uid FROM {realname} WHERE uid=%d", $account->uid))) { 
+    db_query("INSERT INTO {realname} (uid, realname) VALUES(%d, '%s')", $account->uid, $result);
+  }
+  else {
+    db_query("UPDATE {realname} SET realname='s' where uid=%d", $result,$account->uid);
+  }
   return $result;
 }
 
