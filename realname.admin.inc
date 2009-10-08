@@ -453,14 +453,33 @@ function realname_rebuild_confirm() {
 }
 
 /**
+ * Handler for rebuild confirmation
+ */
+function realname_rebuild_confirm_submit($form, &$form_state) {
+  $batch = array(
+    'title' => t('Rebuilding realnames'),
+    'operations' => array(
+      array('_realname_rebuild_realnames', array()),
+      ),
+    'file' => drupal_get_path('module', 'realname') . '/realname.admin.inc',
+    'finished' => '_realname_rebuild_batch_finished',
+  );
+  batch_set($batch);
+}
+
+/**
  * Batchable function used to rebuild realnames
  */
 function _realname_rebuild_realnames(&$context) {
   if (empty($context['sandbox'])) {
     // Initiate multistep processing.
     $context['sandbox']['progress'] = 0;
-    $context['sandbox']['current_user'] = 0;
-    $context['sandbox']['max'] = db_result(db_query('SELECT COUNT(DISTINCT uid) FROM {users}'));
+//    $context['sandbox']['current_user'] = 0;
+    // Skip user 0 (anonymous).
+    $context['sandbox']['current_user'] = 1;
+    $context['sandbox']['max'] = db_result(db_query('SELECT COUNT(DISTINCT uid) FROM {users} WHERE uid > 0'));
+    // Let's get rid of all existing data and start fresh.
+    db_query('TRUNCATE {realname}');
   }
 
   // Process the next 20 users.
@@ -496,19 +515,3 @@ function _realname_rebuild_batch_finished($success, $results, $operations) {
     drupal_set_message(t('The realnames have not been properly rebuilt.'), 'error');
   }
 }
-
-/**
- * Handler for rebuild confirmation
- */
-function realname_rebuild_confirm_submit($form, &$form_state) {
-  $batch = array(
-    'title' => t('Rebuilding realnames'),
-    'operations' => array(
-      array('_realname_rebuild_realnames', array()),
-      ),
-    'file' => drupal_get_path('module', 'realname') . '/realname.admin.inc',
-    'finished' => '_realname_rebuild_batch_finished',
-  );
-  batch_set($batch);
-}
-
