@@ -806,7 +806,7 @@ function _realname_make_name(&$account) {
   else {
     $string = $account->name;
   }
-  return $string;
+  return filter_xss_admin($string);
 }
 
 /**
