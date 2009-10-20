@@ -81,7 +81,7 @@ function realname_username($object, $options = array()) {
           }
         }
       }
-      if (isset($object->homepage) && $options['homepage']) {
+      if (!empty($object->homepage) && $options['homepage']) {
         $url = $object->homepage;
         $title = t("View user's home page.");
         if (variable_get('realname_nofollow', FALSE)) {
