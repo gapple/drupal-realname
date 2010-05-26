@@ -74,6 +74,9 @@ function realname_username($object, $options = array()) {
             // Use empty here because NULL is not set.
             $pic = variable_get('realname_user_level_'. $rid, '');
             $roles[$rid] = empty($pic) ? '' : file_create_url($pic);
+            // Make a nice css value out of the role title
+            $l_opts['attributes']['class'] .= form_clean_id(strtolower($role)) . ' ';
+
           }
           if ($roles[$rid]) {
             $name .= '<img src="'. $roles[$rid] .'" alt="'. $role .'" title="'. $role .'" />';

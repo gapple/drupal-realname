@@ -42,7 +42,7 @@ function content_profile_load_profile(&$account, $type = NULL) {
     }
   }
   
-  $account->title = $profile->title;
+//  $account->title = $profile->title; // http://drupal.org/node/606364
 }
 
 function realname_content_profile_get_types() {

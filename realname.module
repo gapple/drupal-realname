@@ -11,6 +11,37 @@
   if (module_exists('token')) {
     include_once(drupal_get_path('module', 'realname') .'/token_realname.inc');
   }
+  
+  // This is a copy of D7's static function.
+  if (!function_exists('drupal_static')) {
+    function &drupal_static($name, $default_value = NULL, $reset = FALSE) {
+      static $data = array(), $default = array();
+      if (!isset($name)) {
+        // All variables are reset. This needs to be done one at a time so that
+        // references returned by earlier invocations of drupal_static() also get reset.
+        foreach ($default as $name => $value) {
+          $data[$name] = $value;
+        }
+        // As the function returns a reference, the return should always be a variable.
+        return $data;
+      }
+      if ($reset) {
+        // The reset means the default is loaded.
+        if (array_key_exists($name, $default)) {
+          $data[$name] = $default[$name];
+        }
+        else {
+          // Reset was called before a default is set and yet a variable must be returned.
+          return $data;
+        }
+      }
+      elseif (!array_key_exists($name, $data)) {
+        // Store the default value internally and also copy it to the reference to be returned.
+        $default[$name] = $data[$name] = $default_value;
+      }
+      return $data[$name];
+    }
+  }
 
 //********************************************************************
 //* Drupal Hooks
@@ -381,7 +412,7 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
     case 'insert':
     case 'after_update':
       $account->realname = _realname_make_name($account);
-      // Try to update, if fail - try to insert.
+      // If we delete it first, then drupal_write_record is always an insert.
       db_query("DELETE FROM {realname} WHERE uid=%d", $account->uid);
       drupal_write_record('realname', $account);
   }
@@ -666,7 +697,8 @@ function realname_privatemsg_autocomplete($string) {
       }
     }
     drupal_json($matches);
-  } else {
+  }
+  else {
     drupal_json(array()); // prevent Drupal autocomplete error message
   }
 }
@@ -686,7 +718,8 @@ function realname_privatemsg_autocomplete($string) {
  *   The retreived "real name" string.
  */
 function realname_make_name(&$account) {
-  static $users = array();
+  $users = &drupal_static('users',array());
+  $links = &drupal_static('links',array());
 
   // Return anonymous user right away.
   if ($account->uid == 0) {
@@ -707,7 +740,7 @@ function realname_make_name(&$account) {
     db_query("INSERT INTO {realname} (uid, realname) VALUES(%d, '%s')", $account->uid, $result);
   }
   else {
-    db_query("UPDATE {realname} SET realname='s' where uid=%d", $result,$account->uid);
+    db_query("UPDATE {realname} SET realname='%s' where uid=%d", $result, $account->uid);
   }
   return $result;
 }
@@ -723,9 +756,9 @@ function realname_make_name(&$account) {
  */
 function _realname_make_name(&$account) {
   static $fields, $pattern_saved, $homepage, $use_theme, $type, $module, $profile_privacy;
-  static $users = array();
-  static $links = array();
-  static $edit = array();
+  $users = &drupal_static('users',array());
+  $links = &drupal_static('links',array());
+  $edit = &drupal_static('edit',array());
 
   // Get our controlling variables (static makes it once per page load).
   if (!isset($fields)) {
@@ -806,7 +839,7 @@ function _realname_make_name(&$account) {
   else {
     $string = $account->name;
   }
-  return filter_xss_admin($string);
+  return html_entity_decode(filter_xss_admin($string));
 }
 
 /**
