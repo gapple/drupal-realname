@@ -793,7 +793,7 @@ function _realname_make_name(&$account) {
         drupal_set_message(t('The profile load function (!module) was not found.', array('!module' => $load_func)), 'error');
         return $account->name;
       }
-      module_invoke($module, 'load_profile', $account, $type);
+      $load_func($account, $type);
       if ($profile_privacy) {
         profile_privacy_user('load', $edit, $account);
       }
