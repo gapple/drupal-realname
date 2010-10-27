@@ -249,6 +249,9 @@ function realname_check_breadcrumbs($account) {
  */
 function realname_user_view($account) {
   realname_check_breadcrumbs($account);
+  
+  drupal_set_title(check_plain($account->realname));
+  
   // Retrieve all profile fields and attach to $account->content.
   user_build_content($account);
 
