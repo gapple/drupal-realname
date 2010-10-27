@@ -464,7 +464,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   
   // NickSI: Yes, we will have another switch later but I would like to separate table update with other processing
   // Just delete the old nickname from the table. New one is automatically generated on next request.
-  if ( variable_get('realname_profile_module', NULL) == 'content_profile' && is_content_profile($node->type)) {
+  if ( variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
     switch ($op) {
       case 'update':
       case 'insert':
