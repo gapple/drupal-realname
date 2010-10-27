@@ -75,8 +75,7 @@ function realname_username($object, $options = array()) {
             $pic = variable_get('realname_user_level_'. $rid, '');
             $roles[$rid] = empty($pic) ? '' : file_create_url($pic);
             // Make a nice css value out of the role title
-            $l_opts['attributes']['class'] .= form_clean_id(strtolower($role)) . ' ';
-
+            $l_opts['attributes']['class'][] = form_clean_id(strtolower($role));
           }
           if ($roles[$rid]) {
             $name .= '<img src="'. $roles[$rid] .'" alt="'. $role .'" title="'. $role .'" />';
@@ -96,6 +95,15 @@ function realname_username($object, $options = array()) {
         $title = t('View user profile.');
       }
       $l_opts['attributes']['title'] = $title;
+      
+      // Convert the class attributes to a space-delimited string.
+      if (!empty($l_opts['attributes']['class'])) {
+        $l_opts['attributes']['class'] = implode(' ',  $l_opts['attributes']['class']);
+      }
+      else {
+        unset($l_opts['attributes']['class']);
+      }
+      
       $output = l($name, $url, $l_opts);
       if ($options['picture']) {
         $output .= theme('user_picture', $object);

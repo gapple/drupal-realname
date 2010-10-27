@@ -832,7 +832,7 @@ function _realname_make_name(&$account) {
       $pattern = '%1';
     }
 
-    if ($homepage && $account->$homepage) {
+    if (!empty($homepage) && !empty($account->$homepage)) {
       $links[$account->uid] = $account->$homepage;
     }
 
