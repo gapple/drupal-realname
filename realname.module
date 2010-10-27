@@ -11,7 +11,7 @@
   if (module_exists('token')) {
     include_once(drupal_get_path('module', 'realname') .'/token_realname.inc');
   }
-  
+
   // This is a copy of D7's static function.
   if (!function_exists('drupal_static')) {
     function &drupal_static($name, $default_value = NULL, $reset = FALSE) {
@@ -156,7 +156,7 @@ function realname_menu() {
     'file' => 'realname.admin.inc',
     'weight' => 6,
     );
-    
+
   $items['admin/user/realname/recalc'] = array(
     'title' => 'Recalculate names',
     'access arguments' => array('administer users'),
@@ -175,7 +175,7 @@ function realname_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     );
-    
+
   // Privatemsg intercept for recipient autocomplete.
   $items['realname/privatemsg/autocomplete'] = array(
     'title' => 'Realname Privatemsg autocomplete',
@@ -183,7 +183,7 @@ function realname_menu() {
     'page callback' => 'realname_privatemsg_autocomplete',
     'type' => MENU_CALLBACK,
   );
- 
+
   return $items;
 }
 
@@ -192,14 +192,14 @@ function realname_menu() {
  */
 function realname_menu_alter(&$callbacks) {
   $callbacks['user/%user_uid_optional']['title callback'] = 'realname_user_page_title';
-  
+
   // Adjust menu page callbacks to the real name alternatives.
   foreach ($callbacks as $path => $callback) {
     if (isset($callback['page callback'])) {
       switch ($callback['page callback']) {
         case 'user_view':
           // Skip if the Page manager module is installed, which needs to
-          // override 
+          // override
           if ($path == 'user/%user_uid_optional' && module_exists('page_manager')) {
             continue;
           }
@@ -217,7 +217,7 @@ function realname_menu_alter(&$callbacks) {
       }
     }
   }
-  
+
   // Remove the core user_search, if requested.
   if (variable_get('realname_user_disable', FALSE) && isset($callbacks['search/user/%menu_tail'])) {
     unset($callbacks['search/user/%menu_tail']);
@@ -262,9 +262,9 @@ function realname_check_breadcrumbs($account) {
  */
 function realname_user_view($account) {
   realname_check_breadcrumbs($account);
-  
+
   drupal_set_title(realname_user_page_title($account));
-  
+
   // Retrieve all profile fields and attach to $account->content.
   user_build_content($account);
 
@@ -279,9 +279,9 @@ function realname_user_view($account) {
  */
 function realname_user_edit($account, $category = 'account') {
   realname_check_breadcrumbs($account);
-  
+
   drupal_set_title(realname_user_page_title($account));
-  
+
   return drupal_get_form('user_profile_form', $account, $category);
 }
 
@@ -309,7 +309,7 @@ function realname_tracker_page($account = NULL, $set_title = FALSE) {
   else {
     $output = tracker_page($account, $set_title);
   }
-  
+
   if ($account) {
     realname_check_breadcrumbs($account);
     if ($set_title) {
@@ -324,11 +324,11 @@ function realname_tracker_page($account = NULL, $set_title = FALSE) {
  */
 function realname_statistics_user_tracker() {
   $output = statistics_user_tracker();
-  
+
   if ($account = user_load(array('uid' => arg(1)))) {
     drupal_set_title(check_plain($account->realname));
   }
-  
+
   return $output;
 }
 
@@ -345,7 +345,7 @@ function realname_contact_user($account) {
     $output = t('You cannot contact more than %number users per hour. Please try again later.', array('%number' => variable_get('contact_hourly_threshold', 3)));
   }
   else {
-    realname_check_breadcrumbs($account);    
+    realname_check_breadcrumbs($account);
     $output = drupal_get_form('contact_mail_user', $account);
   }
 
@@ -461,7 +461,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if (!user_access('use realname')) {
     return;
   }
-  
+
   // NickSI: Yes, we will have another switch later but I would like to separate table update with other processing
   // Just delete the old nickname from the table. New one is automatically generated on next request.
   if ( variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
@@ -530,7 +530,7 @@ function realname_comment(&$comment, $op) {
         else {
           $users[$comment->uid] = $account = realname_get_user($comment->uid);
         }
-        
+
         $comment->homepage = isset($account->homepage) ? $account->homepage : NULL;
       }
       break;
@@ -571,7 +571,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
         $user->realname = realname_make_name($user);
       }
       $value = $user->uid ? $user->realname_save : variable_get('anonymous', 'Anonymous');
-      eval($field_name .' = $value;');      
+      eval($field_name .' = $value;');
     }
   }
 
@@ -617,7 +617,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
       $form['delete']['#weight'] = 99;
       $form['#submit'][] = '_realname_role_submit';
       break;
-      
+
     case 'privatemsg_new':
       $form['privatemsg']['recipient']['#autocomplete_path'] = 'realname/privatemsg/autocomplete';
       break;
@@ -630,7 +630,7 @@ function realname_form_alter(&$form, $form_state, $form_id) {
 function _realname_role_submit($form, &$form_state) {
   $rid = $form_state['values']['rid'];
   $pic = $form_state['values']['level'];
-  variable_set('realname_user_level_'. $rid, $pic);  
+  variable_set('realname_user_level_'. $rid, $pic);
 }
 
 /**
@@ -642,7 +642,7 @@ function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALS
   }
   switch ($op) {
     case 'name':
-      if ($skip_access_check || user_access('access user profiles')) {      
+      if ($skip_access_check || user_access('access user profiles')) {
         return variable_get('realname_user_disable', FALSE) ? t('Users') : t('User names');
       }
 
@@ -652,30 +652,30 @@ function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALS
 
     case 'status':
       $start = variable_get('realname_last_index', -1) + 1;
-      $total = db_result(db_query('SELECT COUNT(*) FROM {users} WHERE status=1'));
-      $remaining = db_result(db_query("SELECT COUNT(*) FROM {users} WHERE status=1 AND uid>=%d", $start));
+      $total = db_result(db_query('SELECT COUNT(uid) FROM {users} WHERE status = 1'));
+      $remaining = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
       return array('remaining' => $remaining, 'total' => $total);
 
     case 'search':
-      if ($skip_access_check || user_access('access user profiles')) {      
+      if ($skip_access_check || user_access('access user profiles')) {
         $results = array();
         $find = do_search($keys, 'realname');
         foreach ($find as $item) {
           if ($item->type != 'realname') {
             continue;
           }
-          $account = db_fetch_object(db_query("SELECT u.uid, u.name, u.picture FROM {users} u WHERE u.uid=%d", $item->sid));
+          $account = user_load(array('uid' => $item->sid));
           $realname = realname_make_name($account);
           $results[] = array(
-            'link' => url('user/'. $item->sid, array('absolute' => TRUE)),
+            'link' => url('user/'. $account->uid, array('absolute' => TRUE)),
             'type' => t('User'),
             'title' => $realname,
             'user' => theme('username', $account) .'<div class="clear-block"></div>',
             'score' => $item->score,
             'snippet' => theme('user_picture', $account)
               . (user_access('administer users') ? t('Login name: !name', array('!name' => $account->name)) : NULL),
-            );
-          }
+          );
+        }
         return $results;
       }
   }
@@ -688,7 +688,7 @@ function realname_update_index() {
   if (variable_get('realname_search_enable', FALSE)) {
     $start = variable_get('realname_last_index', -1) + 1;
     $limit = (int)variable_get('search_cron_limit', 100);
-    $how_many = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE  status=1 AND uid>=%d", $start));
+    $how_many = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
     $limit = min($limit, $how_many);
     if ($limit < 1) {
       return;
@@ -696,8 +696,9 @@ function realname_update_index() {
     watchdog('RealName', 'Indexing up to !limit users, starting at !start',
       array('!start' => $start, '!limit' => $limit),
       WATCHDOG_NOTICE);
-    $result = db_query_range("SELECT uid, name FROM {users} WHERE status=1 AND uid>=%d", $start, 0, $limit);
-    while ($account = db_fetch_object($result)) {
+    $result = db_query_range("SELECT uid FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start, 0, $limit);
+    while ($uid = db_result($result)) {
+      $account = user_load(array('uid' => $uid));
       $index_text = realname_make_name($account);
       if (variable_get('realname_search_login', FALSE)) {
         $index_text .= ' '. $account->name;
@@ -770,11 +771,11 @@ function realname_make_name(&$account) {
   if (empty($result)) {
     return $account->name;
   }
-  if (!db_result(db_query("SELECT uid FROM {realname} WHERE uid=%d", $account->uid))) { 
-    db_query("INSERT INTO {realname} (uid, realname) VALUES(%d, '%s')", $account->uid, $result);
+  if (!db_result(db_query("SELECT uid FROM {realname} WHERE uid = %d", $account->uid))) {
+    db_query("INSERT INTO {realname} (uid, realname) VALUES (%d, '%s')", $account->uid, $result);
   }
   else {
-    db_query("UPDATE {realname} SET realname='%s' where uid=%d", $result, $account->uid);
+    db_query("UPDATE {realname} SET realname = '%s' WHERE uid = %d", $result, $account->uid);
   }
   return $result;
 }
