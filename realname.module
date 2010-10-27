@@ -192,19 +192,32 @@ function realname_menu() {
  */
 function realname_menu_alter(&$callbacks) {
   $callbacks['user/%user_uid_optional']['title callback'] = 'realname_user_page_title';
-  if (!module_exists('delegator') && !module_exists('page_manager') && $callbacks['user/%user_uid_optional']['page callback'] == 'user_view') {
-    $callbacks['user/%user_uid_optional']['page callback'] = 'realname_user_view';
+  
+  // Adjust menu page callbacks to the real name alternatives.
+  foreach ($callbacks as $path => $callback) {
+    if (isset($callback['page callback'])) {
+      switch ($callback['page callback']) {
+        case 'user_view':
+          // Skip if the Page manager module is installed, which needs to
+          // override 
+          if ($path == 'user/%user_uid_optional' && module_exists('page_manager')) {
+            continue;
+          }
+        case 'user_edit':
+        case 'tracker_page':
+        case 'statistics_user_tracker':
+          $callbacks[$path]['page callback'] = 'realname_' . $callback['page callback'];
+          break;
+        case 'contact_user_page':
+          $callbacks[$path]['page callback'] = 'realname_contact_user';
+          break;
+        case 'blog_page_user':
+          $callbacks[$path]['page callback'] = 'realname_blog_page';
+          break;
+      }
+    }
   }
-  $callbacks['user/%user_category/edit']['page callback'] = 'realname_user_edit';
-  if (isset($callbacks['user/%user/track'])) {
-    $callbacks['user/%user/track']['page callback'] = 'realname_tracker_page';
-  }
-  if (isset($callbacks['user/%user/contact'])) {
-    $callbacks['user/%user/contact']['page callback'] = 'realname_contact_user';
-  }
-  if (isset($callbacks['blog/%user_uid_optional'])) {
-    $callbacks['blog/%user_uid_optional']['page callback'] = 'realname_blog_page';
-  }
+  
   // Remove the core user_search, if requested.
   if (variable_get('realname_user_disable', FALSE) && isset($callbacks['search/user/%menu_tail'])) {
     unset($callbacks['search/user/%menu_tail']);
@@ -250,7 +263,7 @@ function realname_check_breadcrumbs($account) {
 function realname_user_view($account) {
   realname_check_breadcrumbs($account);
   
-  drupal_set_title(check_plain($account->realname));
+  drupal_set_title(realname_user_page_title($account));
   
   // Retrieve all profile fields and attach to $account->content.
   user_build_content($account);
@@ -266,6 +279,9 @@ function realname_user_view($account) {
  */
 function realname_user_edit($account, $category = 'account') {
   realname_check_breadcrumbs($account);
+  
+  drupal_set_title(realname_user_page_title($account));
+  
   return drupal_get_form('user_profile_form', $account, $category);
 }
 
@@ -295,9 +311,24 @@ function realname_tracker_page($account = NULL, $set_title = FALSE) {
   }
   
   if ($account) {
-    realname_check_breadcrumbs($account);    
-    drupal_set_title(realname_user_page_title($account));
+    realname_check_breadcrumbs($account);
+    if ($set_title) {
+      drupal_set_title(check_plain($account->realname));
+    }
   }
+  return $output;
+}
+
+/**
+ * Intercept the statistics tracker page.
+ */
+function realname_statistics_user_tracker() {
+  $output = statistics_user_tracker();
+  
+  if ($account = user_load(array('uid' => arg(1)))) {
+    drupal_set_title(check_plain($account->realname));
+  }
+  
   return $output;
 }
 

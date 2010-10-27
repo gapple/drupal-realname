@@ -34,7 +34,7 @@ function realname_token_values($type, $object = NULL, $options = array()) {
     case 'node':
       // If there's a nid, then create a token with the realname of
       // author of the node.
-      if($object->nid && $object->uid) {
+      if (!empty($object->nid) && $object->uid) {
         $tokens['realname-node-author'] = db_result(db_query("SELECT realname FROM {realname} WHERE uid = %d", $object->uid));
       }
     
@@ -43,7 +43,7 @@ function realname_token_values($type, $object = NULL, $options = array()) {
     case 'comment':
       // If there's a cid, then create a token with the realname of
       // author of the comment
-      if(!empty($object->cid) && $object->uid) {
+      if (!empty($object->cid) && $object->uid) {
         $tokens['realname-comment-author'] = db_result(db_query("SELECT realname FROM {realname} WHERE uid = %d", $object->uid));
       }
 
