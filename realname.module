@@ -376,8 +376,8 @@ function template_preprocess_user_picture_realname(&$variables) {
     }
 
     if (isset($picture)) {
-      $account->name = isset($account->realname) ? $account->realname : realname_make_name($account);
-      $name = $account->name ? $account->name : variable_get('anonymous', t('Anonymous'));
+      $name = isset($account->realname) ? $account->realname : realname_make_name($account);
+      $name = $name ? $name : variable_get('anonymous', t('Anonymous'));
       $alt = t("@user's picture", array('@user' => $name));
       $variables['picture'] = theme('image', $picture, $alt, $alt, '', FALSE);
       if (!empty($account->uid) && user_access('access user profiles')) {
