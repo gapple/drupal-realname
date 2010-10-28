@@ -363,7 +363,7 @@ function realname_admin_fields() {
   $form['realname_pattern'] = array(
     '#type' => 'textfield',
     '#field_prefix' => '<strong>'. t('Name Pattern') .'</strong> ',
-    '#description' => t('The determines how the fields will be used to create the "Real name." Use "%1" to refer to the first field, "%2" to refer to the second, etc..'),
+    '#description' => t('This determines how the fields will be used to create the "Real name." Use "%1" to refer to the first field, "%2" to refer to the second, etc.'),
     '#size' => 30,
     '#default_value' => variable_get('realname_pattern', '%1'),
   );
