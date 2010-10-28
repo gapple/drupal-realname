@@ -246,6 +246,15 @@ function realname_page_manager_override($type) {
 }
 
 /**
+ * Implements hook_ctools_context_converter_alter().
+ */
+function realname_ctools_context_converter_alter($context, $converter, &$value) {
+  if ($context->type == 'user' && $converter == 'name') {
+    $value = theme('username', $context->data, array('plain' => TRUE));
+  }
+}
+
+/**
  * Correct user page breadcrumbs.
  */
 function realname_check_breadcrumbs($account) {
