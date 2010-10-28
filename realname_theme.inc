@@ -95,7 +95,7 @@ function realname_username($object, $options = array()) {
         $title = t('View user profile.');
       }
       $l_opts['attributes']['title'] = $title;
-      
+
       // Convert the class attributes to a space-delimited string.
       if (!empty($l_opts['attributes']['class'])) {
         $l_opts['attributes']['class'] = implode(' ',  $l_opts['attributes']['class']);
@@ -103,7 +103,7 @@ function realname_username($object, $options = array()) {
       else {
         unset($l_opts['attributes']['class']);
       }
-      
+
       $output = l($name, $url, $l_opts);
       if ($options['picture']) {
         $output .= theme('user_picture', $object);
@@ -118,7 +118,7 @@ function realname_username($object, $options = array()) {
     // Sometimes modules display content composed by people who are not registered
     // members of the site (e.g. mailing list or news aggregator modules).
     // This clause enables modules to display the true author of the content.
-    if ($object->homepage && $options['homepage']) {
+    if ($object->homepage && $options['homepage'] && !$options['plain']) {
       $output = l($object->name, $object->homepage, array('attributes' => array('title' => t("View user's home page."))));
     }
     else {
