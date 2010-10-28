@@ -206,6 +206,7 @@ function realname_menu_alter(&$callbacks) {
         case 'user_edit':
         case 'tracker_page':
         case 'statistics_user_tracker':
+        case 'content_profile_page_edit':
           $callbacks[$path]['page callback'] = 'realname_' . $callback['page callback'];
           break;
         case 'contact_user_page':
@@ -333,6 +334,15 @@ function realname_statistics_user_tracker() {
 }
 
 /**
+ * Intercept the content profile edit page.
+ */
+function realname_content_profile_page_edit($type, $account) {
+  $output = content_profile_page_edit($type, $account);
+  drupal_set_title(realname_user_page_title($account));
+  return $output;
+}
+
+/**
  * Intercept the Personal contact page.
  */
 function realname_contact_user($account) {
@@ -440,14 +450,14 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
       break;
 
     case 'delete':
-      db_query("DELETE FROM {realname} WHERE uid=%d", $account->uid);
+      db_query("DELETE FROM {realname} WHERE uid = %d", $account->uid);
       break;
 
     case 'insert':
     case 'after_update':
       $account->realname = _realname_make_name($account);
       // If we delete it first, then drupal_write_record is always an insert.
-      db_query("DELETE FROM {realname} WHERE uid=%d", $account->uid);
+      db_query("DELETE FROM {realname} WHERE uid = %d", $account->uid);
       drupal_write_record('realname', $account);
   }
 }
@@ -510,7 +520,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * Helper to replace user_load() and be much faster.
  */
 function realname_get_user($uid) {
-  $result = db_query("SELECT uid, name, mail FROM {users} WHERE uid=%d", $uid);
+  $result = db_query("SELECT uid, name, mail FROM {users} WHERE uid = %d", $uid);
   $account = db_fetch_object($result);
   $account->name = realname_make_name($account);
   return $account;
@@ -804,7 +814,7 @@ function _realname_make_name(&$account) {
       return $account->name;
     }
     $pattern_saved = variable_get('realname_pattern', ' ');
-    $homepage = variable_get('realname_homepage', NULL);
+    $homepage = variable_get('realname_homepage', '');
     $use_theme = variable_get('realname_theme', TRUE);
     $module = variable_get('realname_profile_module', NULL);
     $type = variable_get('realname_profile_type', NULL);
