@@ -664,10 +664,11 @@ function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALS
       if ($skip_access_check || user_access('access user profiles')) {
         return variable_get('realname_user_disable', FALSE) ? t('Users') : t('User names');
       }
+      break;
 
     case 'reset':
       variable_set('realname_last_index', -1);
-      return;
+      break;
 
     case 'status':
       $start = variable_get('realname_last_index', -1) + 1;
@@ -697,6 +698,7 @@ function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALS
         }
         return $results;
       }
+      break;
   }
 }
 
