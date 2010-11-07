@@ -14,16 +14,10 @@ The only menu item is for the settings page.
 
 Settings
 --------
-The settings page is at Administer >> User >> Realname.
+The settings page is at Administer >> Config >> User >> Real name.
 
-This is where you choose which fields from the profile will be used
+This is where you choose which user tokens will be used
 to create the user's RealName.
-
-Note: Currently only "single line textfield" data will be shown.
-
-The "Separator" value will be placed between the pieces of the name.
-
-TODO: Change to a pattern for more flexilibility.
 
 Permissions
 -----------

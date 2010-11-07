@@ -13,7 +13,7 @@ function realname_token_info() {
     'name' => t('Raw name'),
     'description' => t('The raw login name of the user account, unprocessed by the RealName module.'),
   );
-  
+
   return $info;
 }
 
@@ -42,17 +42,6 @@ function realname_tokens($type, $tokens, array $data = array(), array $options =
         case 'name-raw':
           $replacements[$original] = $sanitize ? check_plain($account->name) : $account->name;
           break;
-      }
-    }
-    
-    $user_fields = field_info_instances('user', 'user');
-    foreach ($user_fields as $field_name => $field) {
-      $token_name = strtr($field_name, '_', '-');
-      if ($field['widget']['module'] == 'text' && isset($tokens[$token_name]) && !empty($account->{$field_name}[LANGUAGE_NONE][0])) {
-        $original = $tokens[$token_name];
-        $item = $account->{$field_name}[LANGUAGE_NONE][0];
-        $instance = field_info_instance('user', $field_name, 'user');
-        $replacements[$original] = $sanitize ? _text_sanitize($instance, LANGUAGE_NONE, $item, 'value') : $item['value'];
       }
     }
   }
