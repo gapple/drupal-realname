@@ -1,280 +1,163 @@
 <?php
-// $Id$
+
+// @todo Alter the username autocomplete
+// @todo Allow users to login with their real name
+// @todo Disable the username field
+// @todo Allow users to override their real name
 
 /**
- * @file
- * The RealName module allows the admin to choose fields from the user profile
- * that will be used to add a "realname" element (method) to a user object.
- * Hook_user is used to automatically add this to any user object that is loaded.
- *
- * @copyright Copyright (c) 2007-2008 Nancy Wichmann.  All rights reserved.
+ * Implements hook_permission().
  */
-
-//********************************************************************
-//* Drupal Hooks
-//********************************************************************/
-
-/**
- * Implementation of hook_help().
- */
-function realname_help($path, $args = null) {
-  switch ($path) {
-    case 'admin/user/realname':
-      return t('This page displays the status of and settings for the RealName module.');
-
-    case 'admin/help#realname':
-      return t('This simple module adds a "realname" element (method) to a user object when that object is loaded.');
-  }
+function realname_permission() {
+  $permissions['administer realname'] = array(
+    'title' => t('Administer Real Name configuration.'),
+  );
+  return $permissions;
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
-function realname_menu($may_cache) {
-  global $user;
-  $items = array();
+function realname_menu() {
+  $items['admin/config/people/realname'] = array(
+    'title' => 'Real name',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('realname_settings_form'),
+    'access arguments' => array('administer realname'),
+    'file' => 'realname.admin.inc',
+  );
 
-  if ($may_cache) {
-    $items[] = array(
-      'path' => 'admin/user/realname',
-      'title' => t('RealName'),
-      'description' => t("Configure which fields are used to create a user's RealName."),
-      'access' => user_access('administer users'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('realname_admin_settings'),
-      );
-  }
-  else {
-    // If desired, load the theme override file.
-    if (variable_get('realname_theme', false)) {
-      include_once(drupal_get_path('module', 'realname') .'/realname_theme.inc');
-    }
-  }
   return $items;
 }
 
 /**
- * Implementation of hook_user().
+ * Implements hook_username_alter().
  */
-function realname_user($op, &$edit, &$account, $category = null) {
-  if ($op == 'load') {
-    $account->realname = realname_make_name($account);
+function realname_username_alter(&$name, stdClass $account) {
+  static $in_username_alter = FALSE;
+
+  if (isset($account->realname)) {
+    $name = $account->realname;
+  }
+  elseif (!$in_username_alter) {
+    // Because realname tokens may execute format_username() we need to prevent
+    // recursion from happening.
+    $in_username_alter = TRUE;
+    if ($realname = realname_load($account)) {
+      $name = $realname;
+    }
+    $in_username_alter = FALSE;
   }
 }
 
 /**
- * Implementation of hook_nodeapi().
+ * Implements hook_user_load().
  */
-function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  if (!variable_get('realname_nodeapi', false)) {
-    return;
+function realname_user_load(array $accounts) {
+  $realnames = realname_load_multiple($accounts);
+  foreach ($realnames as $uid => $realname) {
+    $accounts[$uid]->realname = $realname;
   }
-  switch ($op) {
-    case 'load':
-      // Node is being loaded.
-      // Save the username that is already there.
-      $node->realname_save = $node->name;
-      $account = user_load(array('uid' => $node->uid));
-      $node->realname = $node->name = realname_make_name($account);
-      break;
+}
 
-    case 'prepare':
-      // Node is about to be edited.
-      // Reset the username or save will fail.
-      if (isset($node->realname_save)) {
-        $node->name = $node->realname_save;
+/**
+ * Implements hook_user_update().
+ */
+function realname_user_update(array &$edit, stdClass $account, $category) {
+  // Since user data may have changed, delete the existing realname.
+  realname_delete($account->uid);
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function realname_user_delete(stdClass $account) {
+  realname_delete($account->uid);
+}
+
+/**
+ * Loads a real name.
+ *
+ * @param $uid
+ *   A user account object.
+ * @return
+ *   The user's generated real name.
+ */
+function realname_load(stdClass $account) {
+  $realnames = realname_load_multiple(array($account->uid => $account));
+  return reset($realnames);
+}
+
+/**
+ * Loads multiple real names.
+ *
+ * @param $accounts
+ *   An array of user account objects keyed by user ID.
+ * @return
+ *   An array of real names keyed by user ID.
+ */
+function realname_load_multiple(array $accounts) {
+  $realnames = &drupal_static(__FUNCTION__, array());
+
+  if ($new_accounts = array_diff_key($accounts, $realnames)) {
+    // Attempt to fetch realnames from the database first.
+    $realnames += db_query("SELECT uid, realname FROM {realname} WHERE uid IN (:uids)", array(':uids' => array_keys($new_accounts)))->fetchAllKeyed();
+
+    // For each account that was not present in the database, generate its
+    // real name.
+    foreach ($new_accounts as $uid => $account) {
+      if (!isset($realnames[$uid]) || !drupal_strlen($realnames[$uid])) {
+        // Get the default pattern and allow other modules to alter it.
+        $pattern = variable_get('realname_pattern', '[user:name-raw]');
+        drupal_alter('realname_pattern', $pattern, $account);
+
+        // Perform token replacement on the real name pattern.
+        $realname = token_replace($pattern, array('user' => $account), array('clear' => TRUE));
+        $realname = trim($realname);
+        module_invoke_all('realname_load', $realname, $account);
+
+        // Save to the database and the static cache.
+        db_merge('realname')
+          ->key(array('uid' => $uid))
+          ->fields(array(
+            'realname' => $realname,
+            'created' => REQUEST_TIME,
+          ))
+          ->execute();
+        $realnames[$uid] = $realname;
       }
-      break;
-  }
-}
-
-//********************************************************************
-//* Module Functions
-//********************************************************************
-
-/**
- * Using selected fields, build the "real name" field in the object.
- *
- * @param
- *   $account - the user object to update.
- *
- * @return
- *   The constructed "real name" string.
- */
-function realname_make_name(&$account) {
-  $fields = variable_get('realname_fields', array());
-//  $sep = variable_get('realname_sep', ' ');
-  $pattern = variable_get('realname_pattern', ' ');
-
-  // Has the profile been loaded?
-  if (!isset($account->{$fields[0]['name']})) {
-    profile_load_profile($account);
-  }
-
-  $stuff = array();
-  $i = 0;
-  foreach ($fields as $name => $weight) {
-    ++$i;
-    if (isset($account->$name)) {
-      $stuff['%'. $i] = check_plain($account->$name);
     }
-    else {
-      // If there is no value, remove the patterm piece, except the first.
-      $pattern = $i > 1 ? str_replace('%'. $i, null, $pattern) : $pattern;
-    }
+
   }
 
-  // If no fields set, use username.
-  if (count($stuff) == 0) {
-    $stuff['%1'] = $account->name;
-  }
-
-  // TODO: Make a pattern, rather than hard separator.
-  $string = trim(strtr($pattern, $stuff));
-  return $string;
+  return array_intersect_key($realnames, $accounts);
 }
 
 /**
- * Provides array sorting function for uasort.
- *  @link http://us2.php.net/manual/en/function.uasort.php PHP Manual @end-link
+ * Delete a real name.
  *
- * @param
- *   $a - the first array to be compared.
- *
- * @param
- *   $b - the second array to be compared.
- *
- * @return
- *   integer indicating ordering.
+ * @param $uid
+ *   A user ID.
  */
-function _realname_sort($a, $b) {
-  // Sort first by weight.
-  $ret = $a['weight'] - $b['weight'];
-  if ($ret == 0) {
-    // The two are equal, so use the title.
-    $ret = strcmp($a['title'], $b['title']);
-  }
-
-  return $ret;   
+function realname_delete($uid) {
+  return realname_delete_multiple(array($uid));
 }
 
 /**
- * Displays the admin settings form.
+ * Delete multiple real names.
+ *
+ * @param $uids
+ *   An array of user IDs.
  */
-function realname_admin_settings() {
-  $form = $fields = array();
-  $current =   variable_get('realname_fields', array());
-
-  $result = db_query("SELECT * FROM {profile_fields} WHERE type='textfield'");
-  while ($field = db_fetch_array($result)) {
-    $name = $field['name'];
-    $selected = array_key_exists($name, $current);
-    $fields[$name] = array(
-      'title' => $field['title'],
-      'weight' => $selected ? $current[$name] : 0,
-      'selected' => $selected,
-      );
-  }
-  uasort($fields, '_realname_sort');
-
-  $form['start_table'] = array(
-    '#type' => 'markup',
-    '#value' => '<table><tr><th>Select</th><th>Field name</th><th>Weight</th></tr>',
-    );
-
-  $i = 0;
-  foreach ($fields as $f_name => $values) {
-    $form['field_select_'. $i] = array(
-      '#type' => 'checkbox',
-      '#default_value' => $values['selected'],
-      '#prefix' => '<tr><td align="center">',
-      '#suffix' => '</td>',
-      );
-
-    $form['field_name_'. $i] = array(
-      '#type' => 'hidden',
-      '#value' => $f_name,
-      );
-
-    $form['field_title_'. $i] = array(
-      '#type' => 'item',
-      '#value' => $values['title'],
-      '#prefix' => '<td>',
-      '#suffix' => '</td>',
-      );
-
-    $form['field_weight_'. $i] = array(
-      '#type' => 'weight',
-      '#delta' => 10,
-      '#default_value' => $values['weight'],
-      '#prefix' => '<td>',
-      '#suffix' => '</td></tr>',
-      );
-
-    ++$i;
-  }
-
-  $form['end_table'] = array(
-    '#type' => 'markup',
-    '#value' => '</table>',
-    );
-
-  $form['realname_pattern'] = array(
-    '#type' => 'textfield',
-    '#field_prefix' => '<strong>'. t('Name Pattern') .'</strong> ',
-    '#description' => t('The determines how the fields will be used to create the "Real name." Use "%1" to refer to the first field, "%2" to refer to the second, etc..'),
-    '#size' => 30,
-    '#default_value' => variable_get('realname_pattern', '%1'),
-    );
-
-  $form['realname_theme'] = array(
-    '#type' => 'checkbox',
-    '#title' => '<strong>'. t('Override username theme') .'</strong>',
-    '#description' => t('If this option is selected, the standard username theme function will be overriden to use the "Real name."'),
-    '#default_value' => variable_get('realname_theme', false),
-    );
-
-  $form['realname_nodeapi'] = array(
-    '#type' => 'checkbox',
-    '#title' => '<strong>'. t('Show realname in nodes') .'</strong>',
-    '#description' => t('If this option is selected, the "Real name" will be used on node displays.'),
-    '#default_value' => variable_get('realname_nodeapi', false),
-    );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-    );
-
-  return $form;
+function realname_delete_multiple(array $uids) {
+  db_delete('realname')->condition('uid', $uids, 'IN')->execute();
+  drupal_static_reset('realname_load_multiple');
 }
 
 /**
- * Form submit handler.
+ * Delete all real names.
  */
-function realname_admin_settings_submit($form_id, $form_values) {
-  $i = 0;
-  $fields = array();
-  // Run the form values to get all the fields they want.
-  while (isset($form_values['field_select_'. $i])) {
-    if ($form_values['field_select_'. $i]) {
-      $fields[] = array('title' => $form_values['field_name_'. $i], 'weight' => $form_values['field_weight_'. $i]);
-    }
-    ++$i;
-  }
-  // A little hoop jumping to sort right.
-  uasort($fields, '_realname_sort');
-  $realname_fields = array();
-  foreach ($fields as $key => $values) {
-    $realname_fields[$values['title']] = $values['weight'];
-  }
-
-  // Okay, save the stuff.
-  variable_set('realname_fields', $realname_fields);
-//  variable_set('realname_sep', $form_values['realname_sep']);
-  variable_set('realname_pattern', $form_values['realname_pattern']);
-  variable_set('realname_theme', $form_values['realname_theme']);
-  variable_set('realname_nodeapi', $form_values['realname_nodeapi']);
-
-  drupal_set_message(t('Configuration has been updated.'), 'status');
+function realname_delete_all() {
+  db_delete('realname')->execute();
+  drupal_static_reset('realname_load_multiple');
 }
