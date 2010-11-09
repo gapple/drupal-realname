@@ -1,9 +1,18 @@
 <?php
 
-// @todo Alter the username autocomplete
-// @todo Allow users to login with their real name
-// @todo Disable the username field
-// @todo Allow users to override their real name
+/**
+ * @file
+ * Provides token-based name displays for users.
+ *
+ * @todo Alter the username autocomplete
+ * @todo Allow users to login with their real name
+ * @todo Disable the username field
+ * @todo Allow users to override their real name
+ */
+
+/**
+ * @defgroup realname Real name API
+ */
 
 /**
  * Implements hook_permission().
@@ -76,6 +85,35 @@ function realname_user_delete(stdClass $account) {
 }
 
 /**
+ * Implements hook_user_operations().
+ */
+function realname_user_operations() {
+  $operations['realname_update'] = array(
+    'label' => t('Update real name'),
+    'callback' => 'realname_user_operations_realname_update',
+  );
+  return $operations;
+}
+
+/**
+ * Callback function for admin mass generating user real names.
+ *
+ * @param $uids
+ *   An array of user IDs.
+ */
+function realname_user_operations_realname_update(array $uids) {
+  $accounts = user_load_multiple($uids);
+  foreach ($accounts as $account) {
+    realname_update($account);
+  }
+}
+
+/**
+ * @addtogroup realname
+ * @{
+ */
+
+/**
  * Loads a real name.
  *
  * @param $uid
@@ -107,30 +145,50 @@ function realname_load_multiple(array $accounts) {
     // real name.
     foreach ($new_accounts as $uid => $account) {
       if (!isset($realnames[$uid]) || !drupal_strlen($realnames[$uid])) {
-        // Get the default pattern and allow other modules to alter it.
-        $pattern = variable_get('realname_pattern', '[user:name-raw]');
-        drupal_alter('realname_pattern', $pattern, $account);
-
-        // Perform token replacement on the real name pattern.
-        $realname = token_replace($pattern, array('user' => $account), array('clear' => TRUE));
-        $realname = trim($realname);
-        module_invoke_all('realname_load', $realname, $account);
-
-        // Save to the database and the static cache.
-        db_merge('realname')
-          ->key(array('uid' => $uid))
-          ->fields(array(
-            'realname' => $realname,
-            'created' => REQUEST_TIME,
-          ))
-          ->execute();
-        $realnames[$uid] = $realname;
+        $realnames[$uid] = realname_update($account);
       }
     }
-
   }
 
   return array_intersect_key($realnames, $accounts);
+}
+
+/**
+ * Update the realname for a user account.
+ *
+ * @param $account
+ *   A user account object.
+ *
+ * @see hook_realname_pattern_alter()
+ * @see hook_realname_alter()
+ * @see hook_realname_update()
+ */
+function realname_update($account) {
+  // Get the default pattern and allow other modules to alter it.
+  $pattern = variable_get('realname_pattern', '[user:name-raw]');
+  drupal_alter('realname_pattern', $pattern, $account);
+
+  // Perform token replacement on the real name pattern.
+  $realname = token_replace($pattern, array('user' => $account), array('clear' => TRUE));
+  $realname = trim($realname);
+
+  // Allow other modules to alter the generated realname.
+  drupal_alter('realname', $realname, $account);
+
+  // Save to the database and the static cache.
+  db_merge('realname')
+    ->key(array('uid' => $account->uid))
+    ->fields(array(
+      'realname' => $realname,
+      'created' => REQUEST_TIME,
+    ))
+    ->execute();
+
+  // Allow modules to react to the realname being updated.
+  module_invoke_all('realname_update', $realname, $account);
+
+  $account->realname = $realname;
+  return $realname;
 }
 
 /**
@@ -161,3 +219,7 @@ function realname_delete_all() {
   db_delete('realname')->execute();
   drupal_static_reset('realname_load_multiple');
 }
+
+/**
+ * @} End of "addtogroup realname".
+ */
