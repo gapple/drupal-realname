@@ -4,6 +4,7 @@
  * @file
  * Provides token-based name displays for users.
  *
+ * @todo Add a 'view realname' permission enabled by default
  * @todo Alter the username autocomplete
  * @todo Allow users to login with their real name
  * @todo Disable the username field
@@ -46,7 +47,9 @@ function realname_username_alter(&$name, stdClass $account) {
   static $in_username_alter = FALSE;
 
   if (isset($account->realname)) {
-    $name = $account->realname;
+    if (drupal_strlen($account->realname)) {
+      $name = $account->realname;
+    }
   }
   elseif (!$in_username_alter) {
     // Because realname tokens may execute format_username() we need to prevent
@@ -144,7 +147,7 @@ function realname_load_multiple(array $accounts) {
     // For each account that was not present in the database, generate its
     // real name.
     foreach ($new_accounts as $uid => $account) {
-      if (!isset($realnames[$uid]) || !drupal_strlen($realnames[$uid])) {
+      if (!isset($realnames[$uid])) {
         $realnames[$uid] = realname_update($account);
       }
     }
