@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Form builder; display the realname settings form.
+ *
+ * @see realname_settings_form_submit()
+ */
 function realname_settings_form($form, &$form_state) {
   $form['realname_pattern'] = array(
     '#type' => 'textfield',
@@ -22,6 +27,11 @@ function realname_settings_form($form, &$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Form submit handler for the realname settings form.
+ *
+ * @see realname_settings_form().
+ */
 function realname_settings_form_submit($form, $form_state) {
   if ($form['realname_pattern']['#default_value'] != $form_state['values']['realname_pattern']) {
     // Only clear the realname cache if the pattern was changed.
