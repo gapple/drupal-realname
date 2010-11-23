@@ -46,16 +46,30 @@ function realname_menu() {
 function realname_username_alter(&$name, stdClass $account) {
   static $in_username_alter = FALSE;
 
+  if (empty($account->uid)) {
+    // Don't alter anonymous users or objects that do not have any user ID.
+    return;
+  }
+
+  // Real name was loaded/generated via hook_user_load(), so re-use it.
   if (isset($account->realname)) {
     if (drupal_strlen($account->realname)) {
+      // Only if the real name is a non-empty string is $name actually altered.
       $name = $account->realname;
     }
+    return;
   }
-  elseif (!$in_username_alter) {
-    // Because realname tokens may execute format_username() we need to prevent
-    // recursion from happening.
+
+  // Real name was not yet available for the account so we need to generate it.
+  // Because tokens may call format_username() we need to prevent recursion.
+  if (!$in_username_alter) {
     $in_username_alter = TRUE;
-    if ($realname = realname_load($account)) {
+
+    // If $account->realname was undefined, then the user account object was
+    // likely not properly loaded.
+    $realname_account = user_load($account->uid);
+
+    if ($realname = realname_load($realname_account)) {
       $name = $realname;
     }
     $in_username_alter = FALSE;
