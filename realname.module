@@ -31,6 +31,7 @@ function realname_permission() {
 function realname_menu() {
   $items['admin/config/people/realname'] = array(
     'title' => 'Real name',
+    'description' => 'Use tokens to configure how user names are displayed.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('realname_settings_form'),
     'access arguments' => array('administer realname'),
