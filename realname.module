@@ -187,7 +187,7 @@ function realname_update($account) {
   drupal_alter('realname_pattern', $pattern, $account);
 
   // Perform token replacement on the real name pattern.
-  $realname = token_replace($pattern, array('user' => $account), array('clear' => TRUE));
+  $realname = token_replace($pattern, array('user' => $account), array('clear' => TRUE, 'sanitize' => FALSE));
   $realname = trim($realname);
 
   // Allow other modules to alter the generated realname.
