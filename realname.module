@@ -44,7 +44,7 @@ function realname_menu() {
 /**
  * Implements hook_username_alter().
  */
-function realname_username_alter(&$name, stdClass $account) {
+function realname_username_alter(&$name, $account) {
   static $in_username_alter = FALSE;
 
   if (empty($account->uid)) {
