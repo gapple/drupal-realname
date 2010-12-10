@@ -779,7 +779,7 @@ function realname_make_name(&$account) {
 
   // Return anonymous user right away.
   if ($account->uid == 0) {
-    return $account->name;
+    return isset($account->name) ? $account->name : variable_get('anonymous', t('Anonymous'));
   }
 
   // Check static cache first.
