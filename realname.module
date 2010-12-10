@@ -258,10 +258,10 @@ function realname_ctools_context_converter_alter($context, $converter, &$value) 
  * Correct user page breadcrumbs.
  */
 function realname_check_breadcrumbs($account) {
-  $trail = array(l(t('Home'), ''));
+  $trail = array(l(t('Home'), '<front>'));
   // If we are looking at someone other than the current user, fix the breadcrumb.
   if ($account->uid != $GLOBALS['user']->uid) {
-    $trail[] = decode_entities(l($account->realname, '/user/' . $account->uid));
+    $trail[] = decode_entities(l($account->realname, 'user/' . $account->uid));
   }
   $trail = drupal_set_breadcrumb($trail);
 }
