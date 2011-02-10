@@ -67,12 +67,11 @@ function realname_username_alter(&$name, $account) {
     $in_username_alter = TRUE;
 
     // If $account->realname was undefined, then the user account object was
-    // likely not properly loaded.
-    $realname_account = user_load($account->uid);
-
-    if ($realname = realname_load($realname_account)) {
-      $name = $realname;
+    // not properly loaded. We must enforce calling user_load().
+    if ($realname_account = user_load($account->uid)) {
+      realname_username_alter($name, $realname_account);
     }
+
     $in_username_alter = FALSE;
   }
 }
