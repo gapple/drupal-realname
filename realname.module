@@ -6,42 +6,41 @@
  * The RealName module allows the admin to choose fields from the user profile
  * that will be used to add a "realname" element (method) to a user object.
  */
-  define('MODULE_VERSION', '$Id$');
 
-  if (module_exists('token')) {
-    include_once(drupal_get_path('module', 'realname') . '/token_realname.inc');
-  }
+if (module_exists('token')) {
+  include_once(drupal_get_path('module', 'realname') . '/token_realname.inc');
+}
 
-  // This is a copy of D7's static function.
-  if (!function_exists('drupal_static')) {
-    function &drupal_static($name, $default_value = NULL, $reset = FALSE) {
-      static $data = array(), $default = array();
-      if (!isset($name)) {
-        // All variables are reset. This needs to be done one at a time so that
-        // references returned by earlier invocations of drupal_static() also get reset.
-        foreach ($default as $name => $value) {
-          $data[$name] = $value;
-        }
-        // As the function returns a reference, the return should always be a variable.
+// This is a copy of D7's static function.
+if (!function_exists('drupal_static')) {
+  function &drupal_static($name, $default_value = NULL, $reset = FALSE) {
+    static $data = array(), $default = array();
+    if (!isset($name)) {
+      // All variables are reset. This needs to be done one at a time so that
+      // references returned by earlier invocations of drupal_static() also get reset.
+      foreach ($default as $name => $value) {
+        $data[$name] = $value;
+      }
+      // As the function returns a reference, the return should always be a variable.
+      return $data;
+    }
+    if ($reset) {
+      // The reset means the default is loaded.
+      if (array_key_exists($name, $default)) {
+        $data[$name] = $default[$name];
+      }
+      else {
+        // Reset was called before a default is set and yet a variable must be returned.
         return $data;
       }
-      if ($reset) {
-        // The reset means the default is loaded.
-        if (array_key_exists($name, $default)) {
-          $data[$name] = $default[$name];
-        }
-        else {
-          // Reset was called before a default is set and yet a variable must be returned.
-          return $data;
-        }
-      }
-      elseif (!array_key_exists($name, $data)) {
-        // Store the default value internally and also copy it to the reference to be returned.
-        $default[$name] = $data[$name] = $default_value;
-      }
-      return $data[$name];
     }
+    elseif (!array_key_exists($name, $data)) {
+      // Store the default value internally and also copy it to the reference to be returned.
+      $default[$name] = $data[$name] = $default_value;
+    }
+    return $data[$name];
   }
+}
 
 //********************************************************************
 //* Drupal Hooks
@@ -63,16 +62,11 @@ function realname_help($path, $args = NULL) {
     case 'admin/user/realname/module':
     case 'admin/user/realname/fields':
     case 'admin/user/realname/bypass':
-      $output = t('This page displays the status of and settings for the RealName module.');
-      $output .= '<p>Version: ' . MODULE_VERSION . '</p>';
-
       // Show rebuild warning
       if (variable_get('realname_recalculate', FALSE)) {
         drupal_set_message(t('In order to apply new settings you need to <a href="!rebuild">rebuild</a> your realnames.', array('!rebuild' => url('admin/user/realname/recalc'))), 'warning');
       }
-
-      return $output;
-
+      return t('This page displays the status of and settings for the RealName module.');
     case 'admin/help#realname':
       return t('This simple module adds a "realname" element (method) to a user object when that object is loaded.');
   }
