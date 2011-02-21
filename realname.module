@@ -80,12 +80,12 @@ function realname_theme() {
     'realname_admin_levels' => array(
       'arguments' => array('form' => NULL),
       'file' => 'realname.admin.inc',
-      ),
+    ),
     'realname_new_role' => array(
       'arguments' => array('form' => NULL),
       'file' => 'realname_theme.inc',
-      ),
-    );
+    ),
+  );
 }
 
 /**
@@ -99,18 +99,13 @@ function realname_perm() {
  * Implements hook_menu().
  */
 function realname_menu() {
-  global $user;
-  $items = array();
-
   $items['admin/user/realname'] = array(
     'title' => 'RealName',
     'description' => "Configure which fields are used to create a user's RealName.",
     'access arguments' => array('administer users'),
     'page callback' => 'realname_admin_settings',
-    'type' => MENU_NORMAL_ITEM,
     'file' => 'realname.admin.inc',
-    );
-
+  );
   $items['admin/user/realname/general'] = array(
     'title' => 'General',
     'access arguments' => array('administer users'),
@@ -119,8 +114,7 @@ function realname_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 0,
-    );
-
+  );
   $items['admin/user/realname/fields'] = array(
     'title' => 'Fields',
     'access arguments' => array('administer users'),
@@ -129,8 +123,7 @@ function realname_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 2,
-    );
-
+  );
   $items['admin/user/realname/module'] = array(
     'title' => 'Module',
     'access arguments' => array('administer users'),
@@ -139,8 +132,7 @@ function realname_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 4,
-    );
-
+  );
   $items['admin/user/realname/bypass'] = array(
     'title' => 'Bypass Forms',
     'access arguments' => array('administer users'),
@@ -149,8 +141,7 @@ function realname_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 6,
-    );
-
+  );
   $items['admin/user/realname/recalc'] = array(
     'title' => 'Recalculate names',
     'access arguments' => array('administer users'),
@@ -159,7 +150,7 @@ function realname_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'realname.admin.inc',
     'weight' => 8,
-    );
+  );
 
   // Path is not admin/build/views due to menu complications with the wildcards from
   // the generic ajax callback.
@@ -168,15 +159,17 @@ function realname_menu() {
     'access callback' => 'user_access',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    );
+  );
 
   // Privatemsg intercept for recipient autocomplete.
-  $items['realname/privatemsg/autocomplete'] = array(
-    'title' => 'Realname Privatemsg autocomplete',
-    'access callback' => user_access('access private messages'),
-    'page callback' => 'realname_privatemsg_autocomplete',
-    'type' => MENU_CALLBACK,
-  );
+  if (module_exists('privatemsg')) {
+    $items['realname/privatemsg/autocomplete'] = array(
+      'title' => 'Realname Privatemsg autocomplete',
+      'access callback' => user_access('access private messages'),
+      'page callback' => 'realname_privatemsg_autocomplete',
+      'type' => MENU_CALLBACK,
+    );
+  }
 
   return $items;
 }
@@ -477,7 +470,7 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
   // NickSI: Yes, we will have another switch later but I would like to separate table update with other processing
   // Just delete the old nickname from the table. New one is automatically generated on next request.
-  if ( variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
+  if (variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
     switch ($op) {
       case 'update':
       case 'insert':
