@@ -659,8 +659,8 @@ function realname_search($op = 'search', $keys = NULL, $skip_access_check = FALS
 
     case 'status':
       $start = variable_get('realname_last_index', -1) + 1;
-      $total = db_result(db_query('SELECT COUNT(uid) FROM {users} WHERE status = 1'));
-      $remaining = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
+      $total = db_result(db_query('SELECT COUNT(*) FROM {users} WHERE status = 1'));
+      $remaining = db_result(db_query("SELECT COUNT(*) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
       return array('remaining' => $remaining, 'total' => $total);
 
     case 'search':
@@ -696,7 +696,7 @@ function realname_update_index() {
   if (variable_get('realname_search_enable', FALSE)) {
     $start = variable_get('realname_last_index', -1) + 1;
     $limit = (int)variable_get('search_cron_limit', 100);
-    $how_many = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
+    $how_many = db_result(db_query("SELECT COUNT(*) FROM {users} WHERE status = 1 AND uid >= %d ORDER BY uid", $start));
     $limit = min($limit, $how_many);
     if ($limit < 1) {
       return;
