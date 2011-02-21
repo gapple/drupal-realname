@@ -187,7 +187,7 @@ function realname_menu_alter(&$callbacks) {
         case 'user_view':
           // Skip if the Page manager module is installed, which needs to
           // override
-          if ($path == 'user/%user_uid_optional' && module_exists('page_manager')) {
+          if ($path == 'user/%user_uid_optional' && module_exists('page_manager') && !variable_get('page_manager_user_view_disabled', TRUE)) {
             continue;
           }
         case 'user_edit':
