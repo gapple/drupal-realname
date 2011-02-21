@@ -53,7 +53,7 @@ function realname_install() {
  * Implementation of hook_enable().
  */
 function realname_enable() {
-  drupal_set_message(t('The RealName module has been enabled. You may wish to proceed to <a href="!url">the settings page</a>.', array('!url' => url('admin/user/realname'))));  
+  drupal_set_message(t('The RealName module has been enabled. You may wish to proceed to <a href="!url">the settings page</a>.', array('!url' => url('admin/user/realname'))));
 }
 
 /**
@@ -167,4 +167,11 @@ function realname_update_6102() {
   }
 
   return $ret;
+}
+
+/**
+ * Force updates to run in order for the theme registry changes to take effect.
+ */
+function realname_update_6103() {
+  return array();
 }

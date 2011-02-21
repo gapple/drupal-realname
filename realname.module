@@ -390,21 +390,13 @@ function realname_theme_registry_alter(&$theme_registry) {
     $theme_registry['user_admin_new_role']['file'] = $path . '/realname_theme.inc';
     $theme_registry['user_admin_new_role']['theme path'] = $path;
     $theme_registry['user_admin_new_role']['theme paths'][0] = $path;
-
-    $theme_registry['user_picture']['theme path'] = $path;
-    $theme_registry['user_picture']['theme paths'][0] = $path;
-    foreach ($theme_registry['user_picture']['preprocess functions'] as $key => $value) {
-      if ($value == 'template_preprocess_user_picture') {
-        $theme_registry['user_picture']['preprocess functions'][$key] = 'template_preprocess_user_picture_realname';
-      }
-    }
   }
 }
 
 /**
- * Process variables for user-picture.tpl.php (copied from user.module).
+ * Override template_preprocess_user_picture() to display a user's realname.
  */
-function template_preprocess_user_picture_realname(&$variables) {
+function realname_preprocess_user_picture(&$variables) {
   $variables['picture'] = '';
   if (variable_get('user_pictures', 0)) {
     $account = $variables['account'];
@@ -417,11 +409,13 @@ function template_preprocess_user_picture_realname(&$variables) {
 
     if (isset($picture)) {
       $name = isset($account->realname) ? $account->realname : realname_make_name($account);
-      $name = $name ? $name : variable_get('anonymous', t('Anonymous'));
-      $alt = t("@user's picture", array('@user' => $name));
+      $alt = t("@user's picture", array('@user' => $name ? $name : variable_get('anonymous', t('Anonymous'))));
       $variables['picture'] = theme('image', $picture, $alt, $alt, '', FALSE);
       if (!empty($account->uid) && user_access('access user profiles')) {
-        $attributes = array('attributes' => array('title' => t('View user profile.')), 'html' => TRUE);
+        $attributes = array(
+          'attributes' => array('title' => t('View user profile.')),
+          'html' => TRUE,
+        );
         $variables['picture'] = l($variables['picture'], "user/$account->uid", $attributes);
       }
     }
