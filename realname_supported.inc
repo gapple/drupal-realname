@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Realname module support list.

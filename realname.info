@@ -1,4 +1,3 @@
-; $Id$
 name = "RealName"
 description = "Use user profile fields to build a 'realname' field in a user object."
 core = 6.x

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Realname module support for Content Profile module.
