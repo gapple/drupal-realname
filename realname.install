@@ -52,6 +52,13 @@ function realname_install() {
  * Implementation of hook_enable().
  */
 function realname_enable() {
+  // Clean up orphaned entries from users removed while module disabled
+  db_query("DELETE rn.* FROM {realname} rn WHERE NOT EXISTS (SELECT * FROM {users} u WHERE u.uid=rn.uid)");
+
+  // Create entries in the realname table for any users added while disabled.
+  // Values will be generated and stored on first use
+  db_query('INSERT INTO {realname}(uid) (SELECT uid FROM {users} WHERE uid != 0 AND uid NOT IN (SELECT uid FROM {realname}))');
+
   drupal_set_message(t('The RealName module has been enabled. You may wish to proceed to <a href="!url">the settings page</a>.', array('!url' => url('admin/user/realname'))));
 }
 
@@ -173,4 +180,13 @@ function realname_update_6102() {
  */
 function realname_update_6103() {
   return array();
+}
+
+/**
+ * Make sure every user has an entry in the {realname} table.
+ *
+ * Values will be generated and stored on first use.
+ */
+function realname_update_6104() {
+  db_query('INSERT INTO {realname}(uid) (SELECT uid FROM {users} WHERE uid != 0 AND uid NOT IN (SELECT uid FROM {realname}))');
 }

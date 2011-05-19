@@ -438,10 +438,8 @@ function realname_user($op, &$edit, &$account, $category = NULL) {
 
     case 'insert':
     case 'after_update':
-      $account->realname = _realname_make_name($account);
-      // If we delete it first, then drupal_write_record is always an insert.
-      db_query("DELETE FROM {realname} WHERE uid = %d", $account->uid);
-      drupal_write_record('realname', $account);
+      // force regenerating the realname, and use the new value
+      $account->realname = realname_make_name($account, TRUE);
   }
 }
 
@@ -456,13 +454,13 @@ function realname_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   }
 
   // NickSI: Yes, we will have another switch later but I would like to separate table update with other processing
-  // Just delete the old nickname from the table. New one is automatically generated on next request.
-  if (variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
+  // Update the realname for the author of a content_profile node when it is edited.
+  if ( variable_get('realname_profile_module', NULL) == 'content_profile' && module_exists('content_profile') && is_content_profile($node->type)) {
     switch ($op) {
       case 'update':
       case 'insert':
       case 'delete':
-        db_query('DELETE FROM {realname} WHERE uid = %d', $node->uid);
+        realname_make_name(user_load($node->uid), TRUE);
     }
   }
 
@@ -743,35 +741,45 @@ function realname_privatemsg_autocomplete($string) {
  *
  * @param
  *   $account - the user object to update.
+ *   $reset - Bypass the caches and regenerate the realname
  *
  * @return
- *   The retreived "real name" string.
+ *   The retrieved "real name" string.
  */
-function realname_make_name(&$account) {
-  $users = &drupal_static('users',array());
-  $links = &drupal_static('links',array());
-
+function realname_make_name(&$account, $reset = FALSE) {
   // Return anonymous user right away.
   if ($account->uid == 0) {
     return isset($account->name) ? $account->name : variable_get('anonymous', t('Anonymous'));
   }
 
-  // Check static cache first.
-  if (isset($users[$account->uid])) {
-    $account->homepage = isset($links[$account->uid]) ? $links[$account->uid] : NULL;
-    return $users[$account->uid];
+  $users = &drupal_static('users',array());
+  $links = &drupal_static('links',array());
+
+  if (!$reset){
+    // Check the static cache.
+    if (isset($users[$account->uid])) {
+      $account->homepage = isset($links[$account->uid]) ? $links[$account->uid] : NULL;
+      return $users[$account->uid];
+    }
+
+    // Check the DB cache.
+    $result = db_result(db_query("SELECT realname FROM {realname} WHERE uid=%d", $account->uid));
+    if (!empty($result)){
+      $users[$account->uid] = $result;
+      return $result;
+    }
   }
 
   $result = _realname_make_name($account);
+  // If empty, set to username.
   if (empty($result)) {
-    return $account->name;
+    $result = $account->name;
   }
-  if (!db_result(db_query("SELECT uid FROM {realname} WHERE uid = %d", $account->uid))) {
-    db_query("INSERT INTO {realname} (uid, realname) VALUES (%d, '%s')", $account->uid, $result);
-  }
-  else {
-    db_query("UPDATE {realname} SET realname = '%s' WHERE uid = %d", $result, $account->uid);
-  }
+
+  // update static and DB cache
+  $users[$account->uid] = $result;
+  db_query("UPDATE {realname} SET realname = '%s' WHERE uid = %d", $result, $account->uid);
+
   return $result;
 }
 
